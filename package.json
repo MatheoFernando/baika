@@ -1,0 +1,37 @@
+{
+  "name": "baika",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+     "dev": "next dev -p 3007",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^4.1.3",
+    "@tailwindcss/postcss": "^4.1.6",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.2",
+    "cookies-next": "^5.1.0",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.510.0",
+    "next": "15.3.2",
+    "postcss": "^8.5.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.56.3",
+    "sonner": "^2.0.3",
+    "tailwindcss": "^4.1.6",
+    "zod": "^3.24.4",
+    "zustand": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/cookie": "^1.0.0",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
+}

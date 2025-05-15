@@ -1,6 +1,6 @@
-import instance from "@/src/utils/api";
+import instance from "@/src/lib/api";
 
-export const loginRequest = async (phoneNumber: string, password: string) => {
-  const response = await instance.post('auth/signIn', { phoneNumber, password });
+export const loginRequest = async (number: string, password: string) => {
+  const response = await instance.post('/userAuth/signIn', { number, password });
   return response.data;
 };

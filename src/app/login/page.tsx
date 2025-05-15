@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useLogin } from "@/src/core/auth/useLogin";
 
 const schema = z.object({
-  phoneNumber: z.string().min(9, "Número inválido"),
+  number: z.string().min(9, "Número inválido"),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
 
@@ -35,9 +35,9 @@ function Login() {
   const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true);
-      await useLogin(data.phoneNumber, data.password, lembrar);
+      await useLogin(data.number, data.password, lembrar);
       toast.success("Login realizado com sucesso!");
-      router.push("/painel");
+      router.push("/dashboard");
     } catch (error: unknown) {
       console.error("Erro ao fazer login:", error);
 
@@ -66,33 +66,36 @@ function Login() {
     }
   };
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center  bg-gray-200">
+    <main className="flex min-h-svh flex-col items-center justify-center  bg-gray-100">
       <div className="flex w-full  flex-col">
-        <div className="min-h-screen flex items-center justify-center px-4">
-          <div className="flex w-full max-w-4xl flex-col gap-6 relative">
-            <div className="absolute top-12 left-12 w-64 h-64 -z-10">
+        <div className="min-h-screen flex items-center justify-center px-4 relative">
+              <div className="absolute top-30 right-50 md:w-72 md:h-72  ">
               <Image
                 src="/images/icons/spot-illustrations/bg-shape.png"
                 alt="Forma de fundo"
                 width={250}
                 height={250}
+                className="object-cover"
               />
             </div>
-            <div className="absolute bottom-12 right-12 w-40 h-40 -z-10">
+            <div className="absolute bottom-20 left-50 md:w-72 md:h-72 ">
               <Image
                 src="/images/icons/spot-illustrations/shape-1.png"
                 alt="Forma"
                 width={150}
                 height={150}
+                     className="object-cover"
               />
             </div>
+          <div className="flex w-full max-w-3xl flex-col gap-6 ">
+        
 
             <div className="bg-white rounded-lg shadow-xl overflow-hidden z-10 relative">
               <div className="flex flex-col md:flex-row h-full">
                 <div className="md:w-5/12 bg-gradient-to-br from-blue-500 to-blue-700 text-center">
                   <div className="relative p-4 pt-5 pb-7 md:pt-10 md:pb-16 text-white">
                     <div
-                      className="absolute inset-0 bg-center bg-no-repeat opacity-20"
+                      className="absolute inset-0 bg-center bg-no-repeat bg-cover h-full md:block hidden"
                       style={{
                         backgroundImage:
                           "url('/images/icons/spot-illustrations/half-circle.png')",
@@ -152,13 +155,13 @@ function Login() {
                         <input
                           id="phoneNumber"
                           type="number"
-                          {...register("phoneNumber")}
+                          {...register("number")}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           placeholder="digite seu número de telefone"
                         />
-                        {errors.phoneNumber && (
+                        {errors.number && (
                           <p className="text-red-600 text-sm mt-1">
-                            {errors.phoneNumber.message}
+                            {errors.number.message}
                           </p>
                         )}
                       </div>

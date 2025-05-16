@@ -11,10 +11,13 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import { useLogin } from "@/src/core/auth/useLogin";
+import { useLogin } from "@/src/core/auth/authApi";
 
 const schema = z.object({
-  number: z.string().min(9, "Número inválido"),
+  number: z
+    .string()
+    .length(9, "O número deve ter exatamente 9 dígitos")
+    .regex(/^\d+$/, "O número deve conter 9 apenas dígitos"),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
 
@@ -68,28 +71,27 @@ function Login() {
   return (
     <main className="flex min-h-svh flex-col items-center justify-center  bg-gray-100">
       <div className="flex w-full  flex-col">
+          <h1 className="text-gray-500 text-base mx-6 ">V2</h1>
         <div className="min-h-screen flex items-center justify-center px-4 relative">
-              <div className="absolute top-30 right-50 md:w-72 md:h-72  ">
-              <Image
-                src="/images/icons/spot-illustrations/bg-shape.png"
-                alt="Forma de fundo"
-                width={250}
-                height={250}
-                className="object-cover"
-              />
-            </div>
-            <div className="absolute bottom-20 left-50 md:w-72 md:h-72 ">
-              <Image
-                src="/images/icons/spot-illustrations/shape-1.png"
-                alt="Forma"
-                width={150}
-                height={150}
-                     className="object-cover"
-              />
-            </div>
+          <div className="absolute top-30 right-50 md:w-72 md:h-72  ">
+            <Image
+              src="/images/icons/spot-illustrations/bg-shape.png"
+              alt="Forma de fundo"
+              width={250}
+              height={250}
+              className="object-cover"
+            />
+          </div>
+          <div className="absolute bottom-20 left-50 md:w-72 md:h-72 ">
+            <Image
+              src="/images/icons/spot-illustrations/shape-1.png"
+              alt="Forma"
+              width={150}
+              height={150}
+              className="object-cover"
+            />
+          </div>
           <div className="flex w-full max-w-3xl flex-col gap-6 ">
-        
-
             <div className="bg-white rounded-lg shadow-xl overflow-hidden z-10 relative">
               <div className="flex flex-col md:flex-row h-full">
                 <div className="md:w-5/12 bg-gradient-to-br from-blue-500 to-blue-700 text-center">
@@ -154,10 +156,13 @@ function Login() {
                         </label>
                         <input
                           id="phoneNumber"
-                          type="number"
+                          type="text"
+                          maxLength={9}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           {...register("number")}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="digite seu número de telefone"
+                          placeholder="Digite seu número de telefone"
                         />
                         {errors.number && (
                           <p className="text-red-600 text-sm mt-1">
@@ -203,7 +208,7 @@ function Login() {
                           </label>
                         </div>
                         <Link
-                          href="/reset-password"
+                          href="#"
                           className="text-sm text-blue-600 hover:text-blue-800"
                         >
                           Esqueceu a senha?
@@ -226,7 +231,7 @@ function Login() {
                           )}
                         </button>
                       </div>
-                      <h1 className="text-gray-500">V2</h1>
+                    
                     </form>
                   </div>
                 </div>
@@ -235,6 +240,7 @@ function Login() {
           </div>
         </div>
       </div>
+      
     </main>
   );
 }

@@ -7,23 +7,23 @@ import { PanelLeftIcon } from "lucide-react"
 
 import { useIsMobile } from "@/src/hooks/use-mobile"
 import { cn } from "@/src/lib/utils"
-import { Button } from "@/src/components/components/ui/button"
-import { Input } from "@/src/components/components/ui/input"
-import { Separator } from "@/src/components/components/ui/separator"
+import { Button } from "@/src/infrastructure/ui/button"
+import { Input } from "@/src/infrastructure/ui/input"
+import { Separator } from "@/src/infrastructure/ui/separator"
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@/src/components/components/ui/sheet"
-import { Skeleton } from "@/src/components/components/ui/skeleton"
+} from "@/src/infrastructure/ui/sheet"
+import { Skeleton } from "@/src/infrastructure/ui/skeleton"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/src/components/components/ui/tooltip"
+} from "@/src/infrastructure/ui/tooltip"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7

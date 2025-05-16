@@ -1,5 +1,5 @@
-import Header from "@/src/components/components/header/header";
-import { Sidebar } from "@/src/components/components/sidebar";
+import Header from "@/src/infrastructure/components/dashboard/header/header";
+import { Sidebar } from "@/src/infrastructure/components/dashboard/sidebar";
 
 export default function Layout({ 
   children 
@@ -15,7 +15,7 @@ export default function Layout({
           <Header />
         </header>
 
-        <main className="flex-1 ">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

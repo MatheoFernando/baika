@@ -13,7 +13,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/src/components/components/ui/avatar"
+} from "@/src/infrastructure/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/components/ui/dropdown-menu"
+} from "@/src/infrastructure/ui/dropdown-menu"
 
 export function NavUser({
   user,

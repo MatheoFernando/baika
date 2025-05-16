@@ -115,7 +115,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-gray-100 dark:bg-gray-700 text-foreground;
+    @apply bg-[#EDF2F9] dark:bg-[#0B1727] text-foreground;
   }
 
   h1 {

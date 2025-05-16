@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
-import { Input } from '@/src/components/components/ui/input'
+import { Input } from '@/src/infrastructure/ui/input'
 import {
   Command,
   CommandEmpty,
   CommandItem,
   CommandList
-} from '@/src/components/components/ui/command'
+} from '@/src/infrastructure/ui/command'
 
 const MOCK_DATA = [
   { id: 1, email: 'joao@email.com' },
@@ -50,7 +50,7 @@ export default function SearchDashboard() {
             setQuery(e.target.value)
             setOpen(true)
           }}
-          className="pr-12 py-4.5 border rounded-4xl outline-none bg-white focus:outline-none focus:ring-0  focus-visible:ring-1 focus-visible:border-blue-600 "
+          className="pr-12 py-5 md:w-96 border rounded-4xl outline-none bg-white focus:outline-none focus:ring-0  focus-visible:ring-1 focus-visible:border-blue-600 "
         />
         {query && (
           <button

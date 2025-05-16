@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/src/components/components/ui/dropdown-menu"
+} from "@/src/infrastructure/ui/dropdown-menu"
 
 import { ChevronDown, Moon, Sun, SunMoon } from "lucide-react"
 

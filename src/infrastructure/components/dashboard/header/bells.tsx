@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/components/ui/dropdown-menu"
-import { Badge } from "../ui/badge"
+} from "@/src/infrastructure/ui/dropdown-menu"
+import { Badge } from "../../../ui/badge"
 
 const notifications = [
   {

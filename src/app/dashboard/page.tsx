@@ -1,15 +1,16 @@
+import Activities from "@/src/infrastructure/components/dashboard/activities/page";
+import { SectionCards } from "@/src/infrastructure/components/dashboard/cardsHome";
+import { BreadcrumbRoutas } from "@/src/infrastructure/components/ulils/breadcrumbRoutas";
 
 export default function Dashboard() {
-
-
   return (
-    <div className="flex h-screen overflow-hidden">
-     
-        <main className="flex-1  p-6 ">
-          <div>
-            </div>        
-            </main>
-      
-    </div>
+   
+      <main className="flex flex-col gap-6">
+        <BreadcrumbRoutas title="Inicio"  productName="Inicio" />
+        <SectionCards />
+        <Activities/>
+        
+      </main>
+   
   );
 }

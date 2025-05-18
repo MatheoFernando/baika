@@ -11,7 +11,7 @@ import {
   MessageSquare, 
   FileText,
   Menu,
-  PanelLeftOpen,
+  AlignLeft,
   ChevronDown,
   Pin
 } from "lucide-react";
@@ -80,12 +80,12 @@ export function Sidebar({ className }: SidebarProps) {
     { icon: Users, label: "Supervisores", href: "/dashboard/supervisores" },
     { 
       icon: AlertCircle, 
-      label: "Supervisão", 
+      label: "Empresa", 
       href: "#", 
       items: [
         {
-          title: "Perfil",
-          href: "/dashboard/supervisao/perfil"
+          title: "Cliente",
+          href: "/dashboard/cliente"
         },
         {
           title: "Editar",
@@ -120,13 +120,13 @@ export function Sidebar({ className }: SidebarProps) {
             >
               <div className="flex items-center text-sm">
                 <item.icon 
-                  size={20} 
+                  size={16} 
                   className={cn(
                     collapsed ? "" : "mr-3",
                     isDarkMode ? "text-gray-300" : "text-gray-700"
                   )} 
                 />
-                {!collapsed && <span>{item.label}</span>}
+                {!collapsed && <span >{item.label}</span>}
               </div>
               {!collapsed && (
                 <ChevronDown
@@ -172,7 +172,7 @@ export function Sidebar({ className }: SidebarProps) {
           )}
         >
           <item.icon 
-            size={20} 
+            size={16} 
             className={cn(
               collapsed ? "" : "mr-3",
               pathname === item.href
@@ -192,17 +192,17 @@ export function Sidebar({ className }: SidebarProps) {
         <Image src="/logo.png" alt="Logo" width={40} height={40} className="mr-3" />
       </div>
       <nav>
-         <div className="mb-2 px-4 mt-6 flex items-center">
+         <div className="mb-2 px-4 mt-6 flex items-baseline justify-center">
           <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>Menu</span>
-          <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-200")}></div>
+          <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-400")}></div>
         </div>
         <div className="mb-4">
           {primaryMenuItems.map((item, index) => renderMenuItem(item, index))}
         </div>
         
-        <div className="mb-2 px-4 mt-6 flex items-center">
+        <div className="mb-2 px-4 mt-6 flex items-baseline justify-center">
           <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>Mais</span>
-          <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-200")}></div>
+          <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-400")}></div>
         </div>
         
         <div>
@@ -216,13 +216,12 @@ export function Sidebar({ className }: SidebarProps) {
     <>
       {isMobile && (
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger asChild>
+          <SheetTrigger asChild className="flex justify-start items-start  bg-white h-21 pt-6.5 ">
             <button className={cn(
-              "fixed top-4 left-4 z-40 p-2 rounded-md",
               isDarkMode ? " bg-gray-800 text-white" : " text-gray-800",
-              "shadow-md"
+              ""
             )}>
-              <Menu size={24} />
+              <Menu size={24} className="text-black dark:text-white" />
             </button>
           </SheetTrigger>
           <SheetContent side="left" className={isDarkMode ? "bg-gray-900" : "bg-white"}>
@@ -232,81 +231,69 @@ export function Sidebar({ className }: SidebarProps) {
       )}
 
       {!isMobile && (
-        <div className="flex mt-6">
+        <div className=" ">
+          {/* Sidebar */}
           <div
             className={cn(
-              "h-screen flex flex-col transition-all duration-300",
-              collapsed ? "w-32" : "w-64",
-              isDarkMode ? "" : "",
+            "min-h-screen h-full flex flex-col transition-all p-2 duration-300 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-hidden",
+              collapsed ? "w-24" : "w-64",
               className
             )}
           >
-            <div className="flex items-center justify-between p-4 h-24">
-             
-              <button
-                onClick={toggleSidebar}
-                className={cn(
-                  "p-1 rounded-full",
-                  isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100",
-                  collapsed ? "mx-auto" : ""
-                )}
-              >
-                {collapsed ? (
-                  <PanelLeftOpen size={26} className={isDarkMode ? "text-white" : "text-gray-700"} />
-                ) : (
-                  <Menu size={26} className={isDarkMode ? "text-white" : "text-gray-700"} />
-                )}
-              </button>
-               {!collapsed && (
+            {/* Logo Section */}
+            <div className="flex items-center p-4">
+              {collapsed ? (
+                <Image src="/logo.png" alt="Logo" width={80} height={80} className="" />
+              ) : (
                 <div className="flex items-center">
-                  <Image src="/logo.png" alt="Logo" width={80} height={80} className="mr-3" />
+                  <Image src="/logo.png" alt="Logo" width={60} height={60} className="" />
                 </div>
               )}
-              
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-hidden">
               {collapsed ? (
                 <div className="px-4 py-2">
                   <div className=""></div>
                 </div>
               ) : (
-                
-                  <div className="px-4 py-2 mt-6 flex items-center">
-                    <span className={cn("text-xs", isDarkMode ? "text-gray-400 " : "text-gray-500")}>Menu</span>
-                    <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-200")}></div>
-                  </div>
-                
+                <div className="px-4 py-2 mt-6 flex items-baseline justify-center">
+                  <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>Menu</span>
+                  <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-400")}></div>
+                </div>
               )}
 
               <nav className="mt-2">
                 {primaryMenuItems.map((item, index) => renderMenuItem(item, index))}
                 
                 {!collapsed && (
-                  <div className="px-4 py-2 mt-6 flex items-center">
-                    <span className={cn("text-xs", isDarkMode ? "text-gray-400 " : "text-gray-500")}>Mais</span>
-                    <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-200")}></div>
+                  <div className="px-4 py-2 mt-6 flex items-baseline justify-center">
+                    <span className={cn("text-xs", isDarkMode ? "text-gray-400" : "text-gray-500")}>Mais</span>
+                    <div className={cn("flex-grow h-px ml-2", isDarkMode ? "bg-gray-700" : "bg-gray-400")}></div>
                   </div>
                 )}
                 
                 {secondaryMenuItems.map((item, index) => renderMenuItem(item, index))}
               </nav>
             </div>
-
-            <div className="mt-auto mb-4 px-4">
-              {!collapsed && (
-                <div className={cn("text-sm text-center", isDarkMode ? "text-gray-400" : "text-gray-500")}>
-                  v1.0.0
-                </div>
-              )}
-            </div>
+ 
           </div>
 
-          {collapsed && (
-            <div className="mt-4 ml-2">
-              <Image src="/logo.png" alt="Logo" width={80} height={80} className="object-contain" />
-            </div>
-          )}
+      
+          <button
+            onClick={toggleSidebar}
+            className={cn(
+              " bg-white size-21 fixed top-0 md:left-65 left-55 flex items-center justify-center cursor-pointer",
+              isDarkMode ? "bg-gray-800 text-white" : "  text-gray-700",
+              ""
+            )}
+          >
+            {collapsed ? (
+              <AlignLeft size={26} className={isDarkMode ? "text-white" : "text-gray-700"} />
+            ) : (
+              <Menu size={26} className={isDarkMode ? "text-white" : "text-gray-700"} />
+            )}
+          </button>
         </div>
       )}
     </>

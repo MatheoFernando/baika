@@ -9,9 +9,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import logo from "@/public/logo.png";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { useLogin } from "@/src/core/auth/authApi";
+import { Eye, EyeOff } from "lucide-react";
 
 const schema = z.object({
   number: z
@@ -26,6 +26,8 @@ type FormData = z.infer<typeof schema>;
 function Login() {
   const [lembrar, setLembrar] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+
   const router = useRouter();
   const {
     register,
@@ -70,8 +72,8 @@ function Login() {
   };
   return (
     <main className="flex min-h-svh flex-col items-center justify-center  bg-gray-100">
-      <div className="flex w-full  flex-col">
-          <h1 className="text-gray-500 text-base mx-6 ">V2</h1>
+      <div className="flex w-full  flex-col relative">
+        <h1 className="text-gray-500 text-base mx-6 absolute bottom-2 left-2">V2</h1>
         <div className="min-h-screen flex items-center justify-center px-4 relative">
           <div className="absolute top-30 right-50 md:w-72 md:h-72  ">
             <Image
@@ -139,9 +141,9 @@ function Login() {
                 </div>
 
                 <div className="md:w-7/12 flex items-center justify-center">
-                  <div className="p-4 md:p-8 w-full">
+                  <div className="p-8 md:p-12 w-full">
                     <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-xl font-bold text-gray-600">
+                      <h3 className="text-xl md:text-2xl font-medium text-gray-600">
                         Entrar na conta
                       </h3>
                     </div>
@@ -171,25 +173,33 @@ function Login() {
                         )}
                       </div>
 
-                      <div className="mb-4">
-                        <label
-                          className="block text-sm font-medium text-gray-500 mb-1"
-                          htmlFor="senha"
-                        >
-                          Senha
-                        </label>
-                        <input
-                          id="senha"
-                          type="password"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          {...register("password")}
-                        />
-                        {errors.password && (
-                          <p className="text-red-600 text-sm mt-1">
-                            {errors.password.message}
-                          </p>
-                        )}
-                      </div>
+                <div className="mb-4 relative">
+  <label
+    className="block text-sm font-medium text-gray-500 mb-1"
+    htmlFor="senha"
+  >
+    Senha
+  </label>
+  <input
+    id="senha"
+    type={mostrarSenha ? "text" : "password"}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+    {...register("password")}
+    placeholder="Digite sua senha"
+  />
+  <button
+    type="button"
+    onClick={() => setMostrarSenha(!mostrarSenha)}
+    className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
+    tabIndex={-1}
+  >
+    {mostrarSenha ? <EyeOff size={20} /> : <Eye size={20} />}
+  </button>
+  {errors.password && (
+    <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>
+  )}
+</div>
+
 
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center">
@@ -231,7 +241,6 @@ function Login() {
                           )}
                         </button>
                       </div>
-                    
                     </form>
                   </div>
                 </div>
@@ -240,7 +249,6 @@ function Login() {
           </div>
         </div>
       </div>
-      
     </main>
   );
 }

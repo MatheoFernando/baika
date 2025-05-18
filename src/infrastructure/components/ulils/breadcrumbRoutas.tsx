@@ -41,7 +41,7 @@ export function BreadcrumbRoutas({ title, productName, showBackButton = false }:
     <div className="flex flex-col gap-2 p-6">
       <div className="flex items-center">
         {showBackButton && (
-          <button onClick={handleBack} className="mr-2">
+          <button onClick={handleBack} className="mr-2 cursor-pointer">
             <ChevronLeft />
           </button>
         )}
@@ -56,7 +56,7 @@ export function BreadcrumbRoutas({ title, productName, showBackButton = false }:
             <span> / </span>
           </>
         )}
-        <span className="text-black">{formatLabel(current)}</span>
+        <span className="text-black dark:text-white">{formatLabel(current)}</span>
       </nav>
     </div>
   );

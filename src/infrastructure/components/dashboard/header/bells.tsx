@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import { Bell } from "lucide-react"
-
+import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
+import { format } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,31 +11,42 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/infrastructure/ui/dropdown-menu"
-import { Badge } from "../../../ui/badge"
-
-const notifications = [
-  {
-    id: 1,
-    title: "Novo pedido recebido",
-    description: "Você recebeu um novo pedido de serviço.",
-  },
-  {
-    id: 2,
-    title: "Conta atualizada",
-    description: "Suas informações foram atualizadas com sucesso.",
-  },
-]
+} from "@/src/infrastructure/ui/dropdown-menu";
+import { Badge } from "../../../ui/badge";
+import { getUser } from "@/src/core/auth/authApi";
+import instance from "@/src/lib/api";
 
 export function Bells() {
-  const hasNotifications = notifications.length > 0
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const user = getUser();
+        if (!user) return;
+
+        const response = await instance.get(`/notification/${user}?size=5000`);
+
+        if (response.status !== 200) {
+          throw new Error(response.statusText || "Erro ao buscar notificações");
+        }
+
+        setNotifications(response.data || []);
+      } catch (error) {
+        console.error("Erro ao buscar notificações:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const hasNotifications = notifications.length > 0;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <div className="relative cursor-pointer p-2 hover:bg-muted rounded-full transition-colors">
-          <Bell  />
-    
+          <Bell className="h-5 w-5" />
           {hasNotifications && (
             <Badge
               className="absolute top-0 -right-1.5 h-4 w-4 p-0 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold"
@@ -47,7 +59,7 @@ export function Bells() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="min-w-64 rounded-xl shadow-xl"
+        className="min-w-80 max-h-96 overflow-auto rounded-xl shadow-xl"
         align="end"
         sideOffset={8}
       >
@@ -57,23 +69,31 @@ export function Bells() {
         <DropdownMenuSeparator />
 
         <DropdownMenuGroup>
-          {notifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className="flex flex-col items-start px-2 py-2 gap-0.5 hover:bg-muted"
-            >
-              <span className="text-sm font-semibold">{notification.title}</span>
-              <span className="text-xs text-muted-foreground">{notification.description}</span>
+          {notifications.length > 0 ? (
+            notifications.map((notification) => (
+              <DropdownMenuItem
+                key={notification.id}
+                className="flex flex-col items-start px-2 py-2 gap-0.5 hover:bg-muted transition-colors"
+              >
+                <span className="text-sm font-semibold text-primary">
+                  {notification.title}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {notification.description}
+                </span>
+                <span className="text-[10px] text-muted-foreground italic">
+                  {notification.siteName} — {notification.supervisorName} —{" "}
+                  {format(new Date(notification.createdAt), "dd/MM/yyyy HH:mm")}
+                </span>
+              </DropdownMenuItem>
+            ))
+          ) : (
+            <DropdownMenuItem className="text-sm text-muted-foreground">
+              Sem novas notificações.
             </DropdownMenuItem>
-          ))}
+          )}
         </DropdownMenuGroup>
-
-        {notifications.length === 0 && (
-          <DropdownMenuItem className="text-sm text-muted-foreground">
-            Sem novas notificações.
-          </DropdownMenuItem>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

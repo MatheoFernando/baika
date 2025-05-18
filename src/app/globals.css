@@ -2,8 +2,11 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-
+@theme {
+  --color-primary-provision: "#1D09B2"
+}
 @theme inline {
+  
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -115,7 +118,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-[#EDF2F9] dark:bg-[#0B1727] text-foreground;
+    @apply bg-[#FAFAFB] dark:bg-[#0B1727] text-foreground;
   }
 
   h1 {

@@ -13,25 +13,28 @@ export const useLogin = async (
   lembrar: boolean = false
 ) => {
   const data = await loginRequest(number, password);
+      const token = data.token;
+  const user = data.data.data;
   const expires = lembrar ? 7 : 1;
 
-  Cookies.set("token", data.access_token, { expires });
-  Cookies.set("user", JSON.stringify(data.user), { expires });
-
-  return data;
+  Cookies.set("token", token, { expires });
+  Cookies.set("user", JSON.stringify(user), { expires });
+  return { token, user };
 };
-export const getUser = async () => {
+export const getUser = () => {
   const token = Cookies.get("token");
+  const userRaw = Cookies.get("user");
+
   if (!token) throw new Error("Token não encontrado");
+  if (!userRaw) throw new Error("Usuário não encontrado");
 
-  const response = await instance.get("/user", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const user = JSON.parse(userRaw);
 
-  return response.data;
+  return user;
 };
 
 export const logout = () => {
   Cookies.remove("token");
   Cookies.remove("user");
+ window.location.href = "/login";
 };

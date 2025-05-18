@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/src/infrastructure/ui/dropdown-menu"
 
-import { ChevronDown, Moon, Sun, SunMoon } from "lucide-react"
+import {  Moon, Sun, SunMoon } from "lucide-react"
 
 export function Mode() {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -31,18 +31,18 @@ export function Mode() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="cursor-pointer flex gap-1 items-end p-2 hover:bg-muted rounded-full transition-colors">
+        <div className="cursor-pointer  p-2 hover:bg-muted rounded-full transition-colors">
           {renderIcon()}
-          <ChevronDown className="size-3" />
+      
         </div>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="min-w-40 rounded-lg shadow-xl" align="end" sideOffset={4}>
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" /> Claro
+          <Sun className="mr-2 h-5 w-5" /> Claro
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" /> Escuro
+          <Moon className="mr-2 h-5 w-5" /> Escuro
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

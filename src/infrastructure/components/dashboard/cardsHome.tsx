@@ -65,7 +65,7 @@ export function SectionCards() {
   ];
 
   return (
-    <div className="w-full gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 p-4">
+    <div className="w-full gap-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 ">
       {cardsData.map((card, index) => {
         const isLoaded = card.value !== null;
 

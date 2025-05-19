@@ -70,7 +70,6 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  // Function to render skeleton rows when loading
   const renderSkeletonRows = () => {
     return Array(5)
       .fill(0)
@@ -89,7 +88,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 ">
         <Input
           placeholder="Filtrar por site..."
           value={
@@ -102,7 +101,7 @@ export function DataTable<TData, TValue>({
           disabled={loading}
         />
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border ">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -122,7 +121,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className="h-[230px]">
             {loading ? (
               renderSkeletonRows()
             ) : table.getRowModel().rows?.length ? (

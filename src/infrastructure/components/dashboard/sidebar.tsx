@@ -81,7 +81,6 @@ export function Sidebar({ className }: SidebarProps) {
   ];
 
   const secondaryMenuItems: MenuItem[] = [
-    { icon: BarChart2, label: "Estatísticas", href: "/dashboard/estatisticas" },
     { icon: Map, label: "Maps", href: "/dashboard/maps" },
     { icon: MessageSquare, label: "Chat", href: "/dashboard/chat" },
     { icon: FileText, label: "Relatório da Supervisão", href: "/dashboard/relatorio" },
@@ -205,7 +204,7 @@ export function Sidebar({ className }: SidebarProps) {
                 {secondaryMenuItems.map((item, index) => renderMenuItem(item, index))}
               </nav>
             </div>
- 
+ footer
           </div>
 
       

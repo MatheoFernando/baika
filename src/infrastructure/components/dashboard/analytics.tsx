@@ -90,7 +90,7 @@ export default function Analytics() {
       <CardContent>
         <div className="h-[300px] w-full">
           {isLoading ? (
-            <Skeleton className="w-full h-full rounded-xl" />
+            <Skeleton className="w-full h-full  dark:bg-gray-700 rounded-xl" />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>

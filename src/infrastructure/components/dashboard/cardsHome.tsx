@@ -91,7 +91,7 @@ export function SectionCards() {
                 </Card>
               </Link>
             ) : (
-              <Skeleton className="w-full h-[150px] rounded-xl bg-gray-300 dark:bg-gray-800" />
+              <Skeleton className="w-full h-[155px] rounded-xl  dark:bg-gray-800" />
             )}
           </div>
         );

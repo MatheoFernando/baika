@@ -1,132 +1,177 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { LayoutGrid, List, ChevronDown, Search, Building2, MailWarning } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import {
+  LayoutGrid,
+  List,
+  Search,
+  Building2,
+  MailWarning,
+  Plus,
+} from "lucide-react";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
-} from "../..//ui/table"
+} from "../..//ui/table";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../../ui/pagination"
+} from "../../ui/pagination";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../../ui/dialog"
-import { Input } from "../../ui/input"
-import { Button } from "../../ui/button"
-import { Skeleton } from "../../ui/skeleton"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../../ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar"
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
-import instance from "@/src/lib/api"
+  DialogFooter,
+} from "../../ui/dialog";
+import { Input } from "../../ui/input";
+import { Button } from "../../ui/button";
+import { Skeleton } from "../../ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { Label } from "../../ui/label";
+import instance from "@/src/lib/api";
+import { toast } from "sonner";
+
 
 export default function CompanyTable() {
-  const router = useRouter()
-  const [companies, setCompanies] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState("table")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedCompany, setSelectedCompany] = useState(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const itemsPerPage = 5
-  
+  const router = useRouter();
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState("table");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddClientDialogOpen, setIsAddClientDialogOpen] = useState(false);
+  const [clientName, setClientName] = useState("");
+  const [clientCode, setClientCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const itemsPerPage = 10;
+
   const fetchCompanies = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await instance.get(`/company`);
+      const response = await instance.get(`/company?size=100`);
       setTimeout(() => {
         setCompanies(response.data.data.data);
-        setLoading(false)
-      }, 1000)
+        setLoading(false);
+      }, 1000);
     } catch (error) {
-      console.error("Erro ao buscar empresas:", error)
-      setLoading(false)
+      console.error("Erro ao buscar empresas:", error);
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchCompanies()
-  }, [])
+    fetchCompanies();
+  }, []);
 
-  const filteredCompanies = companies.filter(company =>
+  const filteredCompanies = companies.filter((company) =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
-  const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const currentCompanies = filteredCompanies.slice(startIndex, startIndex + itemsPerPage)
+  const totalPages = Math.ceil(filteredCompanies.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCompanies = filteredCompanies.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const handleCompanyClick = (company) => {
-    setSelectedCompany(company)
-    setIsDialogOpen(true)
+localStorage.setItem("selectedClientCode", company.clientCode);
+setSelectedCompany(company);
+    setIsDialogOpen(true);
+  };
+console.log(selectedCompany)
+const handleNavigateToDetail = (type) => {
+  setIsDialogOpen(false);
+  if (type === "site") {
+    router.push(`/dashboard/cliente/company-site`);
+  } else if (type === "occurrence") {
+    router.push(`/dashboard/cliente/ocorrencia`);
   }
-  
-  const handleNavigateToDetail = (type, id) => {
-    setIsDialogOpen(false)
-    if (type === 'site') {
-      router.push(`/site/${id}`)
-    } else if (type === 'occurrence') {
-      router.push(`/occurrence/${id}`)
-    }
-  }
+};
 
-  // Componente de carregamento
+
+  const createCompany = async () => {
+    if (!clientName || !clientCode) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await instance.post(
+        `/company/create`,
+        {
+          name: clientName,
+          clientCode: clientCode,
+        }
+      );
+      
+      if (response.data.status === 200) {
+        toast.success("Cliente cadastrado com sucesso");
+        setIsAddClientDialogOpen(false);
+        setClientName("");
+        setClientCode("");
+        
+        // Reload companies data
+        fetchCompanies();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Erro ao cadastrar cliente");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const LoadingSkeleton = () => (
     <>
       {viewMode === "table" ? (
-        Array(5).fill(0).map((_, index) => (
-          <TableRow key={index}>
-            <TableCell>
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <Skeleton className="h-4 w-full rounded-2xl" />
-              </div>
-            </TableCell>
-          </TableRow>
-        ))
+        Array(5)
+          .fill(0)
+          .map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <div className="flex items-center space-x-3">
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-full rounded-2xl" />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array(6).fill(0).map((_, index) => (
-            <Card key={index} className="cursor-pointer">
-              <CardHeader className="pb-2">
-                <div className="flex items-center space-x-3">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <Skeleton className="h-4 w-40" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between">
-                  <Skeleton className="h-16 w-24" />
-                  <Skeleton className="h-16 w-24" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {Array(6)
+            .fill(0)
+            .map((_, index) => (
+              <Card key={index} className="cursor-pointer">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-16 w-24" />
+                    <Skeleton className="h-16 w-24" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
         </div>
       )}
     </>
-  )
+  );
 
   const renderAvatar = (company) => (
     <Avatar className="h-8 w-8 rounded-lg">
@@ -134,18 +179,18 @@ export default function CompanyTable() {
       {!company.logo && (
         <AvatarFallback className="flex items-center justify-center bg-gray-400 text-white rounded-full font-semibold">
           {company.name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}
-          {company.name.split(" ").length > 1 && 
+          {company.name.split(" ").length > 1 &&
             company.name.split(" ").slice(-1).join("")[0]?.toUpperCase()}
         </AvatarFallback>
       )}
     </Avatar>
-  )
+  );
 
   return (
     <div className="container mx-auto py-6">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl font-semibold">Empresas</h1>
-        
+        <h1 className="text-2xl font-semibold">Clientes</h1>
+
         <div className="flex items-center w-full md:w-auto gap-2">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -156,42 +201,40 @@ export default function CompanyTable() {
               className="pl-8"
             />
           </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                {viewMode === "table" ? <List className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setViewMode("table")}>
-                <List className="mr-2 h-4 w-4" />
-                <span>Visualizar em tabela</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setViewMode("card")}>
-                <LayoutGrid className="mr-2 h-4 w-4" />
-                <span>Visualizar em cards</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setViewMode(viewMode === "table" ? "card" : "table")}
+          >
+            {viewMode === "table" ? (
+              <List className="h-4 w-4" />
+            ) : (
+              <LayoutGrid className="h-4 w-4" />
+            )}
+          </Button>
+
+          <Button 
+            variant="default" 
+            className="flex items-center gap-1"
+            onClick={() => setIsAddClientDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Adicionar Cliente</span>
+          </Button>
         </div>
       </div>
 
       {viewMode === "table" ? (
         <div className="rounded-md border">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Empresa</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {loading ? (
                 <LoadingSkeleton />
               ) : currentCompanies.length > 0 ? (
                 currentCompanies.map((company) => (
-                  <TableRow 
-                    key={company.id} 
+                  <TableRow
+                    key={company.id}
                     className="cursor-pointer hover:bg-muted"
                     onClick={() => handleCompanyClick(company)}
                   >
@@ -219,38 +262,43 @@ export default function CompanyTable() {
             <LoadingSkeleton />
           ) : currentCompanies.length > 0 ? (
             currentCompanies.map((company) => (
-              <Card 
-                key={company.id} 
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => handleCompanyClick(company)}
+              <Card
+                key={company.id}
+                className="hover:bg-muted/50 transition-colors"
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-center space-x-3">
                     {renderAvatar(company)}
-                    <CardTitle className="text-lg">{company.name}</CardTitle>
+                    <Button
+                      variant="link"
+                      className="p-0 text-lg hover:underline"
+                      onClick={() => handleCompanyClick(company)}
+                    >
+                      {company.name}
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between">
-                    <div 
-                      className="text-center cursor-pointer hover:text-blue-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleNavigateToDetail('site', company.id);
-                      }}
+                    <div
+                      className="text-center border py-2 px-4 rounded-xl cursor-pointer "
+                      onClick={() => handleNavigateToDetail("site")}
                     >
                       <div className="text-2xl font-bold">{company.sites}</div>
                       <div className="text-sm text-muted-foreground">Sites</div>
                     </div>
-                    <div 
-                      className="text-center cursor-pointer hover:text-blue-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleNavigateToDetail('occurrence', company.id);
-                      }}
+                    <div
+                      className="text-center border py-2 px-4 rounded-xl cursor-pointer "
+                      onClick={() =>
+                        handleNavigateToDetail("occurrence")
+                      }
                     >
-                      <div className="text-2xl font-bold">{company.occurrences}</div>
-                      <div className="text-sm text-muted-foreground">Ocorrências</div>
+                      <div className="text-2xl font-bold">
+                        {company.occurrences}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Ocorrências
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -284,9 +332,7 @@ export default function CompanyTable() {
                             setCurrentPage(page);
                           }}
                           className={
-                            page === currentPage
-                              ? "bg-blue-500 text-white"
-                              : ""
+                            page === currentPage ? "bg-blue-500 text-white" : ""
                           }
                         >
                           {page}
@@ -297,8 +343,7 @@ export default function CompanyTable() {
 
                   if (
                     (page === 2 && currentPage > 1) ||
-                    (page === totalPages - 1 &&
-                      currentPage < totalPages - 3)
+                    (page === totalPages - 1 && currentPage < totalPages - 3)
                   ) {
                     return (
                       <PaginationItem key={`ellipsis-${page}`}>
@@ -315,7 +360,6 @@ export default function CompanyTable() {
         </div>
       )}
 
-      {/* Modal de detalhes */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -326,36 +370,100 @@ export default function CompanyTable() {
               Selecione uma opção para ver mais detalhes
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-2 gap-4 mt-4">
-            <Card 
+            <Card
               className="cursor-pointer hover:bg-blue-50 transition-colors"
-              onClick={() => handleNavigateToDetail('site', selectedCompany?.id)}
+              onClick={() =>
+                handleNavigateToDetail("site")
+              }
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Sites</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 <Building2 className="text-3xl font-bold text-center" />
-                <div className="text-sm text-muted-foreground text-center">Clique para ver os sites</div>
+                <div className="text-sm text-muted-foreground text-center">
+                   Ver os sites
+                </div>
               </CardContent>
             </Card>
-            
-            <Card 
+
+            <Card
               className="cursor-pointer hover:bg-blue-50 transition-colors"
-              onClick={() => handleNavigateToDetail('occurrence', selectedCompany?.id)}
+              onClick={() =>
+                handleNavigateToDetail("occurrence")
+              }
             >
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">Ocorrências</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
-                 <MailWarning className="text-3xl font-bold text-center" />
-                <div className="text-sm text-muted-foreground text-center">Ver as ocorrências</div>
+                <MailWarning className="text-3xl font-bold text-center" />
+                <div className="text-sm text-muted-foreground text-center">
+                  Ver as ocorrências
+                </div>
               </CardContent>
             </Card>
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">Adicionar Cliente</DialogTitle>
+            <DialogDescription>
+              Preencha os campos abaixo para cadastrar um novo cliente
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col  gap-4 py-4">
+            <div className="space-y-4">
+              <Label htmlFor="clientCode" className="text-right">
+                Código do Cliente:
+              </Label>
+              <Input
+                id="clientCode"
+                value={clientCode}
+                onChange={(e) => setClientCode(e.target.value)}
+                placeholder="Código do Cliente"
+                className="col-span-3"
+              />
+            </div>
+            <div className="space-y-4">
+              <Label htmlFor="name" className="text-right">
+                Nome:
+              </Label>
+              <Input
+                id="name"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+                placeholder="Nome do Cliente"
+                className="col-span-3"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setIsAddClientDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="button" 
+              onClick={createCompany}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
+  );
 }

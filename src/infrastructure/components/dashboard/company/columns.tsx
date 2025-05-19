@@ -1,9 +1,8 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Edit, Trash } from "lucide-react"
+import { ArrowUpDown, Edit, Trash, Server } from "lucide-react"
 import { Button } from "@/src/infrastructure/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,16 +16,23 @@ import {
 } from "@/src/infrastructure/ui/alert-dialog"
 import { toast } from "sonner"
 
-export type Supervisor = {
+export type Site = {
   _id: string
   name: string
-  phoneNumber: string
-  email?: string
-  avatar?: string
-  active?: boolean
+  address: string
+  costCenter?: string
+  clientCode: string
+  location: any
+  mec?: string
+  ctClient?: string
 }
 
-export const columns: ColumnDef<Supervisor>[] = [
+export const columns: ColumnDef<Site>[] = [
+  {
+    accessorKey: "_id",
+    header: "ID",
+    cell: ({ row }) => <div className="truncate max-w-[100px]">{row.getValue("_id")}</div>,
+  },
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -40,76 +46,66 @@ export const columns: ColumnDef<Supervisor>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => {
-      const user = row.original
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            {!user.avatar && user.name ? (
-              <AvatarFallback className="flex items-center justify-center bg-gray-400 text-white rounded-full font-semibold">
-                {user.name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}
-                {user.name.split(" ").length > 1 &&
-                  user.name.split(" ").slice(-1).join("")[0]?.toUpperCase()}
-              </AvatarFallback>
-            ) : (
-              <AvatarFallback>
-                {user.name?.[0]?.toUpperCase() ?? "?"}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div className="font-medium">{user.name}</div>
-        </div>
-      )
-    },
+    cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
   },
   {
-    accessorKey: "phoneNumber",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Telefone
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => <div>{row.getValue("phoneNumber")}</div>,
+    accessorKey: "address",
+    header: "Endereço",
+    cell: ({ row }) => <div>{row.getValue("address")}</div>,
   },
-
   {
     id: "actions",
     header: "Ações",
     cell: ({ row }) => {
-      const supervisor = row.original
-      
+      const site = row.original
+
       const handleDelete = async () => {
         try {
-          toast.success("Supervisor removido com sucesso")
+          // Dispatch custom event for delete handling in parent component
+          window.dispatchEvent(
+            new CustomEvent('delete-site', { detail: site._id })
+          )
         } catch (error) {
-          console.error("Erro ao remover supervisor:", error)
-          toast.error("Erro ao remover supervisor")
+          console.error("Erro ao remover site:", error)
+          toast.error("Erro ao remover site")
         }
       }
-      
+
       return (
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
+          {/* Edit Button */}
+          <Button
+            variant="ghost"
             size="icon"
             className="h-8 w-8 p-0 text-blue-600 hover:text-blue-900 hover:bg-blue-100"
-            onClick={() => window.dispatchEvent(new CustomEvent('edit-supervisor', { detail: supervisor }))}
+            onClick={() => window.dispatchEvent(new CustomEvent('edit-site', { detail: site }))}
           >
             <Edit className="h-4 w-4" />
             <span className="sr-only">Editar</span>
           </Button>
-          
+
+          {/* Equipment Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 p-0 text-green-600 hover:text-green-900 hover:bg-green-100"
+            onClick={() => {
+              if (site.costCenter) {
+                window.location.href = `/equipmentList?costCenter=${site.costCenter}`
+              } else {
+                toast.error("Este site não possui um centro de custo associado.")
+              }
+            }}
+          >
+            <Server className="h-4 w-4" />
+            <span className="sr-only">Equipamentos</span>
+          </Button>
+
+          {/* Delete Button with Confirmation */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 className="h-8 w-8 p-0 text-red-600 hover:text-red-900 hover:bg-red-100"
               >
@@ -121,7 +117,9 @@ export const columns: ColumnDef<Supervisor>[] = [
               <AlertDialogHeader>
                 <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta ação não pode ser desfeita. Isso excluirá permanentemente o supervisor <span className="font-medium text-gray-800">{supervisor.name}</span> do sistema.
+                  Esta ação não pode ser desfeita. Isso excluirá permanentemente o site 
+                  <span className="font-medium text-gray-800 mx-1">{site.name}</span> 
+                  do sistema.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

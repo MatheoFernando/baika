@@ -5,19 +5,17 @@ import { usePathname } from "next/navigation";
 import { 
   Home, 
   Users, 
-  AlertCircle, 
   BarChart2, 
   Map, 
   MessageSquare, 
   FileText,
   Menu,
   AlignLeft,
-  ChevronDown,
-  Pin
+  Pin,
+  Building2
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
 import {
   Sheet,
   SheetContent,
@@ -78,21 +76,7 @@ export function Sidebar({ className }: SidebarProps) {
   const primaryMenuItems: MenuItem[] = [
     { icon: Home, label: "Início", href: "/dashboard" },
     { icon: Users, label: "Supervisores", href: "/dashboard/supervisores" },
-    { 
-      icon: AlertCircle, 
-      label: "Empresa", 
-      href: "#", 
-      items: [
-        {
-          title: "Cliente",
-          href: "/dashboard/cliente"
-        },
-        {
-          title: "Editar",
-          href: "/dashboard/supervisao/editar"
-        }
-      ]
-    },
+    {  icon: Building2,  label: "Clientes",  href: "/dashboard/cliente"  },
     { icon: Pin, label: "Ocorrências", href: "/dashboard/occurrence" },
   ];
 
@@ -105,62 +89,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   const renderMenuItem = (item: MenuItem, index: number) => (
     <div key={index}>
-      {item.items ? (
-        <Collapsible
-          open={openItems[item.label] && !collapsed}
-          onOpenChange={() => toggleItem(item.label)}
-        >
-          <CollapsibleTrigger asChild>
-            <button
-              className={cn(
-                "flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800",
-                collapsed ? "justify-center" : "justify-between",
-                isDarkMode ? "text-white" : "text-gray-700"
-              )}
-            >
-              <div className="flex items-center text-sm">
-                <item.icon 
-                  size={16} 
-                  className={cn(
-                    collapsed ? "" : "mr-3",
-                    isDarkMode ? "text-gray-300" : "text-gray-700"
-                  )} 
-                />
-                {!collapsed && <span >{item.label}</span>}
-              </div>
-              {!collapsed && (
-                <ChevronDown
-                  size={16}
-                  className={cn(
-                    "transition-transform duration-200",
-                    openItems[item.label] ? "transform rotate-180" : ""
-                  )}
-                />
-              )}
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            {!collapsed && (
-              <div className="pl-9 py-1 space-y-1">
-                {item.items.map((subItem, subIndex) => (
-                  <Link
-                    key={subIndex}
-                    href={subItem.href}
-                    className={cn(
-                      "block py-1.5 px-2 text-sm rounded-md",
-                      pathname === subItem.href 
-                        ? " text-blue-700  dark:text-blue-300" 
-                        : isDarkMode ? "text-gray-300 hover:bg-gray-800" : "text-gray-600 hover:bg-gray-100"
-                    )}
-                  >
-                    {subItem.title}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </CollapsibleContent>
-        </Collapsible>
-      ) : (
+   
         <Link
           href={item.href}
           className={cn(
@@ -172,7 +101,7 @@ export function Sidebar({ className }: SidebarProps) {
           )}
         >
           <item.icon 
-            size={16} 
+            size={20} 
             className={cn(
               collapsed ? "" : "mr-3",
               pathname === item.href
@@ -182,7 +111,7 @@ export function Sidebar({ className }: SidebarProps) {
           />
           {!collapsed && <span>{item.label}</span>}
         </Link>
-      )}
+      
     </div>
   );
 
@@ -246,7 +175,7 @@ export function Sidebar({ className }: SidebarProps) {
                 <Image src="/logo.png" alt="Logo" width={80} height={80} className="" />
               ) : (
                 <div className="flex items-center">
-                  <Image src="/logo.png" alt="Logo" width={60} height={60} className="" />
+                  <Image src="/logo.png" alt="Logo" width={100} height={100} className="" />
                 </div>
               )}
             </div>

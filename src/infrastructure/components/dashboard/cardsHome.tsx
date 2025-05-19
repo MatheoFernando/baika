@@ -49,10 +49,10 @@ export function SectionCards() {
       icon: <UserIcon className="size-8 text-muted-foreground" />,
     },
     {
-      title: "Empresas",
+      title: "Clientes",
       value: companyCount,
-      link: "/dashboard/empresas",
-      footer: "Total de empresas",
+      link: "/dashboard/cliente",
+      footer: "Total de clientes",
       icon: <Building2Icon className="size-8 text-muted-foreground" />,
     },
     {
@@ -70,10 +70,10 @@ export function SectionCards() {
         const isLoaded = card.value !== null;
 
         return (
-          <div key={index} className="w-full h-full hover:shadow-md transition-all duration-200 dark:bg-gray-800 dark:hover:bg-gray-800">
+          <div key={index} className="w-full h-full  transition-all duration-200 ">
             {isLoaded ? (
               <Link href={card.link} className=" w-full">
-                <Card >
+                <Card className="dark:bg-gray-800">
                   <CardHeader className="relative">
                     <CardDescription>{card.title}</CardDescription>
                     <CardTitle className="lg:text-3xl text-primary-provision  text-2xl font-semibold ">

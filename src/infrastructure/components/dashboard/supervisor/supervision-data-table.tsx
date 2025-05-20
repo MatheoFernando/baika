@@ -38,19 +38,21 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/src/infrastructure/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { Checkbox } from "@/src/infrastructure/ui/checkbox";
 
 interface SupervisorDataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   loading?: boolean;
+  onAddClick?: () => void;
 }
 
 export function SupervisorDataTable<TData, TValue>({
   columns,
   data,
   loading = false,
+  onAddClick,
 }: SupervisorDataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -106,54 +108,65 @@ export function SupervisorDataTable<TData, TValue>({
 
   return (
     <div>
-   <div className="flex items-center justify-between py-4 gap-4">
-  <Input
-    placeholder="Buscar por nome..."
-    value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-    onChange={(event) =>
-      table.getColumn("name")?.setFilterValue(event.target.value)
-    }
-    className="max-w-sm"
-    disabled={loading}
-  />
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="outline" className="ml-auto">
-        Filtro <ChevronDown className="ml-2 h-4 w-4" />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      {table
-        .getAllColumns()
-        .filter((column) => column.getCanHide())
-        .map((column) => {
-          return (
-            <div key={column.id} className="flex items-center px-2 py-1.5">
-              <Checkbox
-                id={`filter-${column.id}`}
-                checked={column.getIsVisible()}
-                onCheckedChange={(value) => column.toggleVisibility(!!value)}
-              />
-              <label
-                htmlFor={`filter-${column.id}`}
-                className="ml-2 text-sm capitalize cursor-pointer"
-              >
-                {column.id === "name"
-                  ? "Nome"
-                  : column.id === "phoneNumber"
-                  ? "Telefone"
-                  : column.id === "email"
-                  ? "Email"
-                  : column.id === "active"
-                  ? "Estado"
-                  : column.id}
-              </label>
-            </div>
-          );
-        })}
-    </DropdownMenuContent>
-  </DropdownMenu>
-</div>
+      <div className="flex flex-wrap items-center justify-between py-4 gap-4">
+           <h1 className="text-2xl font-bold">Supervisores</h1>
+        <div className="flex gap-2 ">
+        <Input
+          placeholder="Buscar por nome..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+          disabled={loading}
+        />
+          <Button 
+            variant="default" 
+            onClick={onAddClick}
+            disabled={loading}
+            className="flex items-center gap-1"
+          >
+            <Plus className="h-4 w-4" /> Adicionar Supervisor
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                Filtro <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <div key={column.id} className="flex items-center px-2 py-1.5">
+                      <Checkbox
+                        id={`filter-${column.id}`}
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      />
+                      <label
+                        htmlFor={`filter-${column.id}`}
+                        className="ml-2 text-sm capitalize cursor-pointer"
+                      >
+                        {column.id === "name"
+                          ? "Nome"
+                          : column.id === "phoneNumber"
+                          ? "Telefone"
+                          : column.id === "email"
+                          ? "Email"
+                          : column.id === "active"
+                          ? "Estado"
+                          : column.id}
+                      </label>
+                    </div>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

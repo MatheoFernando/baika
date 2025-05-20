@@ -1,7 +1,7 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Edit, Trash } from "lucide-react"
+import { ArrowUpDown, ChevronDown, Edit, Trash, Eye } from "lucide-react"
 import { Button } from "@/src/infrastructure/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar"
 import {
@@ -24,6 +24,10 @@ export type Supervisor = {
   email?: string
   avatar?: string
   active?: boolean
+  employeeId?: string
+  address?: string
+  createdAt?: string
+  mecCoordinator?: string
 }
 
 export const columns: ColumnDef<Supervisor>[] = [
@@ -78,7 +82,21 @@ export const columns: ColumnDef<Supervisor>[] = [
     },
     cell: ({ row }) => <div>{row.getValue("phoneNumber")}</div>,
   },
-
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => <div>{row.getValue("email")}</div>,
+  },
   {
     id: "actions",
     header: "Ações",
@@ -96,6 +114,16 @@ export const columns: ColumnDef<Supervisor>[] = [
       
       return (
         <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-8 w-8 p-0 cursor-pointer text-gray-600 hover:text-green-900 hover:bg-green-100"
+            onClick={() => window.dispatchEvent(new CustomEvent('view-supervisor-detail', { detail: supervisor }))}
+          >
+            <Eye className="h-4 w-4" />
+            <span className="sr-only">Ver Detalhes</span>
+          </Button>
+          
           <Button 
             variant="ghost" 
             size="icon"

@@ -187,7 +187,6 @@ export function Sidebar({ className }: SidebarProps) {
 
       {!isMobile && (
         <div>
-          {/* Sidebar */}
           <div
             className={cn(
               "min-h-screen h-full flex flex-col transition-all p-2 duration-300 bg-white border-r border-gray-200 dark:bg-gray-800 dark:border-gray-700 overflow-hidden",
@@ -195,7 +194,7 @@ export function Sidebar({ className }: SidebarProps) {
               className
             )}
           >
-            <div className="flex items-center p-4">
+            <Link href="/" className="flex items-center p-4">
               {collapsed ? (
                 <Image src="/logo.png" alt="Logo" width={80} height={80} className="" />
               ) : (
@@ -203,7 +202,7 @@ export function Sidebar({ className }: SidebarProps) {
                   <Image src="/logo.png" alt="Logo" width={100} height={100} className="" />
                 </div>
               )}
-            </div>
+            </Link>
 
             <div className="flex-1 overflow-hidden mb-4">
               {collapsed ? (
@@ -257,7 +256,7 @@ export function Sidebar({ className }: SidebarProps) {
           <button
             onClick={toggleSidebar}
             className={cn(
-              "bg-white size-21 fixed top-0 md:left-65 left-55 flex items-center justify-center cursor-pointer",
+              "bg-white size-16 fixed top-0 md:left-65 left-55 flex items-center justify-center cursor-pointer",
               isDarkMode ? "bg-gray-800 text-white" : "text-gray-700",
               ""
             )}

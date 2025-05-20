@@ -13,7 +13,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/src/infrastructure/ui/dialog"
 import {
@@ -210,7 +209,7 @@ export default function SitesPage() {
   }
 
   return (
-    <Card className="bg-white dark:bg-gray-800 p-8">
+    <Card className="bg-white dark:bg-gray-800 ">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Sites da Empresa</h1>
         <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -227,7 +226,6 @@ export default function SitesPage() {
         setSearchTerm={setSearchTerm}
       />
       
-      {/* Paginação customizada */}
       <Pagination>
         <PaginationContent>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map(
@@ -272,7 +270,6 @@ export default function SitesPage() {
         </PaginationContent>
       </Pagination>
       
-      {/* Modal para adicionar site */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -332,7 +329,6 @@ export default function SitesPage() {
         </DialogContent>
       </Dialog>
       
-      {/* Modal para editar site */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>

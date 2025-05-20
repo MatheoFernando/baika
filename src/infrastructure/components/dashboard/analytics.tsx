@@ -9,6 +9,7 @@ import {
   XAxis,
   ResponsiveContainer,
   Tooltip,
+  Cell,
 } from "recharts"
 import instance from "@/src/lib/api"
 import {
@@ -71,17 +72,30 @@ export default function Analytics() {
 
   const chartData = metrics?.data
     ? [
-        { name: "Clientes", value: metrics.data.company || 0 },
-        { name: "Sites", value: metrics.data.totalSites || 0 },
-        { name: "Funcionários", value: metrics.data.users || 0 },
-        { name: "Ocorrências", value: metrics.data.occurrences || 0 },
+        { name: "Clientes", total: metrics.data.company || 0 },
+        { name: "Sites", total: metrics.data.totalSites || 0 },
+        { name: "Funcionários", total: metrics.data.users || 0 },
+        { name: "Ocorrências", total: metrics.data.occurrences || 0 },
       ]
     : []
 
   const topSupervisor = getTopSupervisorBySupervisions()
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 rounded-md shadow border text-sm">
+          <p className="font-semibold">{payload[0].name}</p>
+          <p>Valor: {payload[0].value}</p>
+        </div>
+      )
+    }
+
+    return null
+  }
+
   return (
-    <Card className="flex-1  dark:bg-gray-800  w-full ">
+    <Card className="w-full md:w-1/2 dark:bg-gray-800 ">
       <CardHeader>
         <CardTitle>Visão Geral (Gráfico)</CardTitle>
         <CardDescription>Métricas principais</CardDescription>
@@ -90,7 +104,7 @@ export default function Analytics() {
       <CardContent>
         <div className="h-[300px] w-full">
           {isLoading ? (
-            <Skeleton className="w-full h-full  dark:bg-gray-700 rounded-xl" />
+            <Skeleton className="w-full h-full dark:bg-gray-700 rounded-xl" />
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -100,9 +114,9 @@ export default function Analytics() {
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
-
                 />
                 <Tooltip
+                  content={<CustomTooltip />}
                   cursor={{ fill: "rgba(0, 0, 0, 0.1)" }}
                   contentStyle={{
                     borderRadius: "8px",
@@ -110,14 +124,15 @@ export default function Analytics() {
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                     cursor: "default",
                   }}
-                  
                 />
-                <Bar
-                  dataKey="value"
-                  fill="#1D09B2"
-                  radius={[4, 4, 0, 0]}
-                  barSize={40}
-                />
+                <Bar dataKey="total" radius={[4, 4, 0, 0]} barSize={40}>
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.total < 50 ? "#90cdf4" : "#1D09B2"}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -132,7 +147,7 @@ export default function Analytics() {
         ) : topSupervisor ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-            <p className="text-xs font-medium">{topSupervisor.name}</p>
+              <p className="text-xs font-medium">{topSupervisor.name}</p>
               <TrendingUp className="h-4 w-4 text-green-500" />
               <p className="text-xs text-muted-foreground">
                 Total: {topSupervisor.count} supervisões

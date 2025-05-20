@@ -96,7 +96,7 @@ export default function Activities() {
   };
 
   return (
-    <Card className=" flex dark:bg-gray-800 p-8 ">
+    <Card className="w-full md:w-1/2 flex dark:bg-gray-800 p-8 ">
       <h1 className="text-base font-medium mb-5">Últimas Atividades</h1>
       <DataTable columns={columns} data={notifications} loading={loading} />
     </Card>

@@ -27,10 +27,10 @@ export function SectionCards() {
         const userResponse = await instance.get(`user?size=1000`);
         setUserCount(userResponse.data.data.data.length);
 
-        const companyResponse = await instance.get(`/company?size=5000`);
+        const companyResponse = await instance.get(`/company?size=500`);
         setCompanyCount(companyResponse.data.data.data.length);
 
-        const equipmentResponse = await instance.get(`/equipment?size=5000`);
+        const equipmentResponse = await instance.get(`/equipment?size=500`);
         setEquipmentCount(equipmentResponse.data.data.data.length);
       } catch (error) {
         console.error("Erro ao buscar dados:", error);

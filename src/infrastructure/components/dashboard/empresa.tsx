@@ -191,7 +191,7 @@ const handleNavigateToDetail = (type) => {
       <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-semibold">Clientes</h1>
 
-        <div className="flex items-center w-full md:w-auto gap-2">
+        <div className="flex items-center flex-wrap  w-full md:w-auto gap-2">
           <div className="relative w-full md:w-64">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -271,7 +271,7 @@ const handleNavigateToDetail = (type) => {
                     {renderAvatar(company)}
                     <Button
                       variant="link"
-                      className="p-0 text-lg hover:underline"
+                      className="p-0 lg:text-lg text-sm hover:underline"
                       onClick={() => handleCompanyClick(company)}
                     >
                       {company.name}

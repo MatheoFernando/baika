@@ -66,7 +66,7 @@ export function SupervisorDetailModal() {
         
         <div className="flex flex-col items-center justify-center mb-4">
           <Avatar className="h-24 w-24 mb-2">
-            <AvatarImage src={supervisor.avatar} alt={supervisor.name} />
+            <AvatarImage src={supervisor.avatar || "/placeholder.svg"} alt={supervisor.name} />
             {!supervisor.avatar && supervisor.name ? (
               <AvatarFallback className="flex items-center justify-center bg-black text-white rounded-full text-lg font-semibold">
                 {supervisor.name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}

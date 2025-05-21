@@ -1,22 +1,14 @@
 "use client"
-
-import React from "react"
-import { 
-  Document, 
-  Page, 
-  Text, 
-  View, 
-  StyleSheet, 
-  
-} from "@react-pdf/renderer"
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer"
+import { Notification } from "../data-table/occurrence"
 
 const styles = StyleSheet.create({
   page: {
     padding: 30,
-    fontFamily: 'Helvetica',
+    fontFamily: "Helvetica",
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   logo: {
@@ -25,120 +17,116 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: 'bold',
-    backgroundColor: '#f0f0f0',
+    fontWeight: "bold",
+    backgroundColor: "#f0f0f0",
     padding: 8,
     marginBottom: 10,
     marginTop: 10,
   },
   infoRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: '#eaeaea',
+    borderBottomColor: "#eaeaea",
     paddingVertical: 6,
     paddingHorizontal: 4,
   },
   infoLabel: {
-    width: '40%',
-    fontWeight: 'bold',
+    width: "40%",
+    fontWeight: "bold",
     fontSize: 10,
   },
   infoValue: {
-    width: '60%',
+    width: "60%",
     fontSize: 10,
   },
   detailsContainer: {
     padding: 10,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     marginBottom: 10,
     fontSize: 10,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   gridItem: {
-    width: '50%',
+    width: "50%",
     padding: 5,
   },
   itemCard: {
-    border: '1px solid #eaeaea',
+    border: "1px solid #eaeaea",
     padding: 8,
     marginBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   priorityBadge: {
     padding: 4,
     borderRadius: 4,
     fontSize: 10,
-    textAlign: 'center',
-    width: '80%',
+    textAlign: "center",
+    width: "80%",
   },
   priorityLow: {
-    backgroundColor: '#dcfce7',
-    color: '#166534',
+    backgroundColor: "#dcfce7",
+    color: "#166534",
   },
   priorityMedium: {
-    backgroundColor: '#fef9c3',
-    color: '#854d0e',
+    backgroundColor: "#fef9c3",
+    color: "#854d0e",
   },
   priorityHigh: {
-    backgroundColor: '#ffedd5',
-    color: '#9a3412',
+    backgroundColor: "#ffedd5",
+    color: "#9a3412",
   },
   priorityCritical: {
-    backgroundColor: '#fee2e2',
-    color: '#991b1b',
+    backgroundColor: "#fee2e2",
+    color: "#991b1b",
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     left: 0,
     right: 0,
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 8,
-    color: '#666',
-    
+    color: "#666",
   },
   pageNumber: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 30,
     fontSize: 8,
-    color: '#666',
+    color: "#666",
   },
   divider: {
     borderBottomWidth: 1,
-    borderBottomColor: '#eaeaea',
+    borderBottomColor: "#eaeaea",
     marginVertical: 10,
   },
 })
 
-interface NotificationPDFProps {
+interface OccurrencePDFProps {
   notification: Notification
   getPriorityLabel: (priority: string) => string
 }
 
-export function NotificationPDF({
-  notification,
-  getPriorityLabel,
-}: NotificationPDFProps) {
+export function OccurrencePDF({ notification, getPriorityLabel }: OccurrencePDFProps) {
   // Get priority style
   const getPriorityStyle = (priority: string) => {
-    switch(priority) {
-      case 'BAIXA':
+    switch (priority) {
+      case "BAIXA":
         return styles.priorityLow
-      case 'MEDIA':
+      case "MEDIA":
         return styles.priorityMedium
-      case 'ALTA':
+      case "ALTA":
         return styles.priorityHigh
-      case 'CRITICA':
+      case "CRITICA":
         return styles.priorityCritical
       default:
         return styles.priorityLow
@@ -154,39 +142,39 @@ export function NotificationPDF({
 
         <View>
           <Text style={styles.sectionTitle}>INFORMAÇÕES GERAIS</Text>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Local:</Text>
             <Text style={styles.infoValue}>{notification.siteName}</Text>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Centro de Custo:</Text>
             <Text style={styles.infoValue}>{notification.costCenter}</Text>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Supervisor:</Text>
             <Text style={styles.infoValue}>{notification.supervisorName || "Não informado"}</Text>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Data:</Text>
             <Text style={styles.infoValue}>{notification.createdAt}</Text>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Hora:</Text>
             <Text style={styles.infoValue}>{notification.createdAtTime}</Text>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Prioridade:</Text>
             <View style={[styles.priorityBadge, getPriorityStyle(notification.priority)]}>
               <Text>{getPriorityLabel(notification.priority)}</Text>
             </View>
           </View>
-          
+
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Número de Trabalhadores:</Text>
             <Text style={styles.infoValue}>{notification.numberOfWorkers || 0}</Text>
@@ -213,17 +201,17 @@ export function NotificationPDF({
                       <Text style={styles.infoLabel}>Nome:</Text>
                       <Text style={styles.infoValue}>{worker.name}</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Número de Empregado:</Text>
                       <Text style={styles.infoValue}>{worker.employeeNumber}</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Estado:</Text>
                       <Text style={styles.infoValue}>{worker.state}</Text>
                     </View>
-                    
+
                     {worker.obs && (
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Observações:</Text>
@@ -250,22 +238,22 @@ export function NotificationPDF({
                       <Text style={styles.infoLabel}>Nome:</Text>
                       <Text style={styles.infoValue}>{equip.name}</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Número de Série:</Text>
                       <Text style={styles.infoValue}>{equip.serialNumber}</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Estado:</Text>
                       <Text style={styles.infoValue}>{equip.state}</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                       <Text style={styles.infoLabel}>Centro de Custo:</Text>
                       <Text style={styles.infoValue}>{equip.costCenter}</Text>
                     </View>
-                    
+
                     {equip.obs && (
                       <View style={styles.infoRow}>
                         <Text style={styles.infoLabel}>Observações:</Text>
@@ -279,13 +267,13 @@ export function NotificationPDF({
           </View>
         )}
 
-        <Text style={styles.footer}>
-          Gerado pelo sistema - Visualização da ocorrência
-        </Text>
-        
-        <Text style={styles.pageNumber} render={({ pageNumber, totalPages }) => (
-          `${pageNumber} / ${totalPages}`
-        )} fixed />
+        <Text style={styles.footer}>Gerado pelo sistema - Visualização da ocorrência</Text>
+
+        <Text
+          style={styles.pageNumber}
+          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+          fixed
+        />
       </Page>
     </Document>
   )

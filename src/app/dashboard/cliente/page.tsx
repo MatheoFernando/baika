@@ -1,4 +1,4 @@
-import CompanyTable from '@/src/infrastructure/components/dashboard/empresa'
+import CompanyTable from '@/src/infrastructure/components/dashboard/data-table/company'
 import { BreadcrumbRoutas } from '@/src/infrastructure/components/ulils/breadcrumbRoutas'
 import { Card } from '@/src/infrastructure/ui/card'
 import React from 'react'

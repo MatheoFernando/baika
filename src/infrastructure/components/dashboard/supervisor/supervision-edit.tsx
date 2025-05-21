@@ -1,12 +1,25 @@
 "use client"
 
 import * as React from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react'
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/src/infrastructure/ui/dialog"
 import { Input } from "@/src/infrastructure/ui/input"
 import { Button } from "@/src/infrastructure/ui/button"
-import { Supervisor } from "./supervision-columns"
+
+
+interface Supervisor {
+  _id: string
+  name: string
+  phoneNumber: string
+  email?: string
+  avatar?: string
+  active?: boolean
+  employeeId?: string
+  address?: string
+  createdAt?: string
+  mecCoordinator?: string
+}
 
 interface SupervisorEditFormProps {
   supervisor: Supervisor | null
@@ -38,8 +51,6 @@ export function SupervisorEditForm({
     const { name, value } = e.target
     setEditedSupervisor(prev => prev ? { ...prev, [name]: value } : null)
   }
-
- 
 
   const handleActiveChange = (checked: boolean) => {
     if (!editedSupervisor) return
@@ -105,7 +116,6 @@ export function SupervisorEditForm({
               onChange={handleChange}
             />
           </div>
-          
           
           <div className="flex justify-end gap-2 pt-4">
             <Button

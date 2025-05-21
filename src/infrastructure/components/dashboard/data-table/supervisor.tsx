@@ -1,7 +1,8 @@
 "use client"
 
+import * as React from "react"
 import { ColumnDef } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, Edit, Trash, Eye } from "lucide-react"
+import { ArrowUpDown,  Edit, Trash, Eye } from "lucide-react"
 import { Button } from "@/src/infrastructure/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar"
 import {
@@ -16,6 +17,12 @@ import {
   AlertDialogTrigger,
 } from "@/src/infrastructure/ui/alert-dialog"
 import { toast } from "sonner"
+import { DataTable } from "../data-table"
+import instance from "@/src/lib/api"
+import { SupervisorDetailModal } from "../supervisor/supervisor-Detail-Modal"
+import { SupervisorAddForm } from "../supervisor/supervision-Add-Form"
+import { SupervisorEditForm } from "../supervisor/supervision-edit"
+import { BreadcrumbRoutas } from "../../ulils/breadcrumbRoutas"
 
 export type Supervisor = {
   _id: string
@@ -30,7 +37,87 @@ export type Supervisor = {
   mecCoordinator?: string
 }
 
-export const columns: ColumnDef<Supervisor>[] = [
+
+export function SupervisorTable() {
+  const [data, setData] = React.useState<Supervisor[]>([])
+  const [error, setError] = React.useState<string | null>(null)
+  const [supervisors, setSupervisors] = React.useState<Supervisor[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [editingSupervisor, setEditingSupervisor] = React.useState<Supervisor | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
+ 
+
+ 
+  React.useEffect(() => {
+    fetchSupervisors()
+    
+    const handleEditEvent = (event: Event) => {
+      const supervisor = (event as CustomEvent).detail
+      setEditingSupervisor(supervisor)
+      setIsEditDialogOpen(true)
+    }
+    
+    window.addEventListener('edit-supervisor', handleEditEvent as EventListener)
+    
+    return () => {
+      window.removeEventListener('edit-supervisor', handleEditEvent as EventListener)
+    }
+  }, [])
+  
+  const fetchSupervisors = async () => {
+    setLoading(true)
+    try {
+      const response = await instance.get( `/user?size=100` ) 
+      if (response.data && Array.isArray(response.data.data.data)) {
+        const formattedData = response.data.data.data.map((user: any) => ({
+          _id: user._id,
+          name: user.name || "Sem nome",
+          phoneNumber: user.phoneNumber || "Não informado",
+          email: user.email,
+          active: user.active !== false, 
+          avatar: user.avatar
+        }))
+        
+        setSupervisors(formattedData)
+        setData(formattedData) // Atualizando também o estado data que é usado na DataTable
+      } else {
+        toast.error("Formato de resposta inválido")
+      }
+    } catch (error) {
+      console.error("Erro ao buscar supervisores:", error)
+      toast.error("Não foi possível carregar os supervisores")
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  const updateSupervisor = async (editedSupervisor: Supervisor) => {
+    try {
+      const { _id, active, ...payload } = editedSupervisor
+      await instance.put( `/user/updateMe/${_id}`, payload )
+      
+      // Atualizando ambos os estados
+      const updatedSupervisors = supervisors.map(sup => 
+        sup._id === _id ? { ...sup, ...payload, _id } : sup
+      );
+      
+      setSupervisors(updatedSupervisors);
+      setData(updatedSupervisors);
+      
+      return Promise.resolve()
+    } catch (error) {
+      console.error("Erro ao atualizar supervisor:", error)
+      return Promise.reject(error)
+    }
+  }
+
+  const handleAddClick = () => {
+    setIsAddDialogOpen(true)
+  }
+
+  
+ const columns: ColumnDef<Supervisor>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -165,3 +252,40 @@ export const columns: ColumnDef<Supervisor>[] = [
     },
   },
 ]
+
+  const handleAddSupervisor = () => {
+    setIsAddDialogOpen(true);
+  }
+
+  return (
+    <div className="container mx-auto py-10">
+          <BreadcrumbRoutas title="Supervisores"  productName="Inicio" showBackButton />
+      <DataTable
+        columns={columns}
+        data={data}
+        loading={loading}
+        title="Supervisores"
+        filterOptions={{
+          enableNameFilter: true,
+          enableColumnVisibility: true,
+          enableAddButton: true,
+          addButtonLabel: "Adicionar Supervisor",
+        }}
+        onAddClick={handleAddSupervisor}
+        initialColumnVisibility={{
+          email: false,
+        }}
+      />
+          <SupervisorEditForm
+        supervisor={editingSupervisor}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onSave={updateSupervisor}
+      />
+
+      <SupervisorAddForm open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} onSuccess={fetchSupervisors} />
+
+      <SupervisorDetailModal />
+    </div>
+  )
+}

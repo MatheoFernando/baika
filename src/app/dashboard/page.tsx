@@ -1,6 +1,6 @@
-import Activities from "@/src/infrastructure/components/dashboard/activities/page";
 import Analytics from "@/src/infrastructure/components/dashboard/analytics";
 import { SectionCards } from "@/src/infrastructure/components/dashboard/cardsHome";
+import { ActivityTable } from "@/src/infrastructure/components/dashboard/data-table/activities";
 import { BreadcrumbRoutas } from "@/src/infrastructure/components/ulils/breadcrumbRoutas";
 
 export default function Dashboard() {
@@ -10,7 +10,7 @@ export default function Dashboard() {
       <SectionCards />
       <div className="flex flex-col md:flex-row gap-8 justify-between items-center">
         <Analytics />
-        <Activities />
+        <ActivityTable />
       </div>
     </main>
   );

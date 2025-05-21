@@ -79,6 +79,7 @@ export function Sidebar({ className }: SidebarProps) {
     { icon: Users, label: "Supervisores", href: "/dashboard/supervisores" },
     {  icon: Building2,  label: "Clientes",  href: "/dashboard/cliente"  },
     { icon: Pin, label: "Ocorrências", href: "/dashboard/occurrence" },
+    { icon: BarChart2, label: "Supervisão", href: "/dashboard/supervisao" },
   ];
 
   const secondaryMenuItems: MenuItem[] = [
@@ -256,7 +257,7 @@ export function Sidebar({ className }: SidebarProps) {
           <button
             onClick={toggleSidebar}
             className={cn(
-              "bg-white size-16 fixed top-0 md:left-65 left-55 flex items-center justify-center cursor-pointer",
+              " size-16  absolute -top-1 md:left-65 left-55 flex items-center justify-center cursor-pointer",
               isDarkMode ? "bg-gray-800 text-white" : "text-gray-700",
               ""
             )}

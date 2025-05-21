@@ -1,12 +1,10 @@
-import SupervisorsPage from '@/src/infrastructure/components/dashboard/supervisor/supervision-page'
-import { BreadcrumbRoutas } from '@/src/infrastructure/components/ulils/breadcrumbRoutas'
+import { SupervisorTable } from '@/src/infrastructure/components/dashboard/data-table/supervisor'
 import React from 'react'
 
 export default function Supervisores() {
   return (
     <div>
-        <BreadcrumbRoutas title="Supervisores"  productName="Inicio" showBackButton />
-        <SupervisorsPage/>
+        <SupervisorTable/>
     </div>
   )
 }

@@ -7,19 +7,49 @@ import {
   List,
   Search,
   Building2,
-  MailWarning,
   Plus,
+  BarChart2,
+  ClipboardMinus,
 } from "lucide-react";
 import instance from "@/src/lib/api";
 import { toast } from "sonner";
-import { Table, TableBody, TableCell, TableRow } from "@/src/infrastructure/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/infrastructure/ui/table";
 import { Skeleton } from "@/src/infrastructure/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/src/infrastructure/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/infrastructure/ui/card";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/src/infrastructure/ui/avatar";
 import { Input } from "@/src/infrastructure/ui/input";
 import { Button } from "@/src/infrastructure/ui/button";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink } from "@/src/infrastructure/ui/pagination";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/src/infrastructure/ui/dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+} from "@/src/infrastructure/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/src/infrastructure/ui/dialog";
 import { AlertDialogHeader } from "@/src/infrastructure/ui/alert-dialog";
 import { Label } from "@/src/infrastructure/ui/label";
 
@@ -59,10 +89,33 @@ export default function CompanyTable() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const itemsPerPage = 15;
 
+  // Definição das colunas movida para o local correto
+  const columns = React.useMemo(
+    () => [
+      {
+        accessorKey: "clientCode",
+        header: "Código do Cliente",
+        cell: ({ row }: { row: any }) => (
+          <span>{row.original.clientCode}</span>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "Nome",
+        cell: ({ row }: { row: any }) => (
+          <span>{row.original.name}</span>
+        ),
+      },
+    ],
+    []
+  );
+
   const fetchCompanies = async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await instance.get<ApiResponse<Company[]>>(`/company?size=100`);
+      const response = await instance.get<ApiResponse<Company[]>>(
+        `/company?size=100`
+      );
       setTimeout(() => {
         setCompanies(response.data.data.data);
         setLoading(false);
@@ -99,12 +152,14 @@ export default function CompanyTable() {
     setIsDialogOpen(true);
   };
 
-  const handleNavigateToDetail = (type: "site" | "occurrence"): void => {
+  const handleNavigateToDetail = (type: "site" | "occurrence" | "supervisao"): void => {
     setIsDialogOpen(false);
     if (type === "site") {
       router.push(`/dashboard/cliente/sites-cliente`);
     } else if (type === "occurrence") {
       router.push(`/dashboard/cliente/ocorrencia`);
+    } else if (type === "supervisao") {
+      router.push(`/dashboard/cliente/supervisao`);
     }
   };
 
@@ -123,7 +178,7 @@ export default function CompanyTable() {
           clientCode: clientCode,
         }
       );
-      
+
       if (response.data.status === 200) {
         toast.success("Cliente cadastrado com sucesso");
         setIsAddClientDialogOpen(false);
@@ -219,8 +274,8 @@ export default function CompanyTable() {
             )}
           </Button>
 
-          <Button 
-            variant="default" 
+          <Button
+            variant="default"
             className="flex items-center gap-1"
             onClick={() => setIsAddClientDialogOpen(true)}
           >
@@ -233,6 +288,11 @@ export default function CompanyTable() {
       {viewMode === "table" ? (
         <div className="rounded-md border">
           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Cliente</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
               {loading ? (
                 <LoadingSkeleton />
@@ -364,17 +424,18 @@ export default function CompanyTable() {
       )}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <AlertDialogHeader>
-            <DialogTitle className="text-xl">
+        <DialogContent className="sm:max-w-md lg:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              <span>{selectedCompany?.clientCode} - </span>
               {selectedCompany?.name}
             </DialogTitle>
             <DialogDescription>
               Selecione uma opção para ver mais detalhes
             </DialogDescription>
-          </AlertDialogHeader>
+          </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
             <Card
               className="cursor-pointer hover:bg-blue-50 transition-colors"
               onClick={() => handleNavigateToDetail("site")}
@@ -384,9 +445,6 @@ export default function CompanyTable() {
               </CardHeader>
               <CardContent className="flex flex-col gap-2 justify-center items-center">
                 <Building2 className="text-blue-400" size={32} />
-                <div className="text-sm text-muted-foreground text-center">
-                  Ver os sites
-                </div>
               </CardContent>
             </Card>
 
@@ -398,17 +456,29 @@ export default function CompanyTable() {
                 <CardTitle className="text-lg">Ocorrências</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2 justify-center items-center">
-                <MailWarning className="text-red-400" size={32} />
-                <div className="text-sm text-muted-foreground text-center">
-                  Ver as ocorrências
-                </div>
+                <ClipboardMinus className="text-red-400" size={32} />
+              </CardContent>
+            </Card>
+
+            <Card
+              className="cursor-pointer hover:bg-blue-50 transition-colors"
+              onClick={() => handleNavigateToDetail("supervisao")}
+            >
+              <CardHeader className="pb-2 justify-center items-center">
+                <CardTitle className="text-lg">Supervisão</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2 justify-center items-center">
+                <BarChart2 className="text-red-400" size={32} />
               </CardContent>
             </Card>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isAddClientDialogOpen} onOpenChange={setIsAddClientDialogOpen}>
+      <Dialog
+        open={isAddClientDialogOpen}
+        onOpenChange={setIsAddClientDialogOpen}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl">Adicionar Cliente</DialogTitle>
@@ -445,16 +515,16 @@ export default function CompanyTable() {
           </div>
 
           <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => setIsAddClientDialogOpen(false)}
               disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={createCompany}
               disabled={isSubmitting}
             >

@@ -11,9 +11,10 @@ import {
   FileText,
   Menu,
   AlignLeft,
-  Pin,
   Building2,
-  LogOut
+  LogOut,
+  ChartNoAxesCombined,
+  ClipboardMinus
 } from "lucide-react";
 import { cn } from "@/src/lib/utils";
 import Link from "next/link";
@@ -78,13 +79,14 @@ export function Sidebar({ className }: SidebarProps) {
     { icon: Home, label: "Início", href: "/dashboard" },
     { icon: Users, label: "Supervisores", href: "/dashboard/supervisores" },
     {  icon: Building2,  label: "Clientes",  href: "/dashboard/cliente"  },
-    { icon: Pin, label: "Ocorrências", href: "/dashboard/occurrence" },
+    { icon: ClipboardMinus, label: "Ocorrências", href: "/dashboard/occurrence" },
     { icon: BarChart2, label: "Supervisão", href: "/dashboard/supervisao" },
   ];
 
   const secondaryMenuItems: MenuItem[] = [
     { icon: Map, label: "Maps", href: "/dashboard/maps" },
     { icon: MessageSquare, label: "Chat", href: "/dashboard/chat" },
+    { icon: ChartNoAxesCombined, label: "Analytics", href: "/dashboard/analytics" },
     { icon: FileText, label: "Relatório da Supervisão", href: "/dashboard/relatorio" },
   ];
 

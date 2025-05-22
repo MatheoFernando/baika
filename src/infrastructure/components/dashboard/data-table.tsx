@@ -127,22 +127,7 @@ export function DataTable<TData, TValue>({
     }
   }, [searchTerm, nameAccessor, table])
 
-  const renderAvatar = (item: TData) => {
-    const name = String(item[nameAccessor] || "")
-    const avatarSrc = item[avatarAccessor] as string | undefined
 
-    return (
-      <Avatar className="h-8 w-8 rounded-lg">
-        <AvatarImage src={avatarSrc || "/placeholder.svg"} alt={name} />
-        {!avatarSrc && (
-          <AvatarFallback className="flex items-center justify-center bg-gray-400 text-white rounded-full font-semibold">
-            {name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}
-            {name.split(" ").length > 1 && name.split(" ").slice(-1).join("")[0]?.toUpperCase()}
-          </AvatarFallback>
-        )}
-      </Avatar>
-    )
-  }
 
   const renderSkeletonRows = () => {
     return Array(8)
@@ -203,7 +188,6 @@ export function DataTable<TData, TValue>({
           >
             <CardHeader className="pb-2">
               <div className="flex items-center space-x-3">
-                {hasAvatar && renderAvatar(item)}
                 <div className="font-medium">{String(item[cardOptions.primaryField] || "")}</div>
               </div>
             </CardHeader>
@@ -266,7 +250,6 @@ export function DataTable<TData, TValue>({
                       <TableCell key={cell.id} className="py-0.25 items-center justify-center ">
                         {cell.column.id === nameAccessor && hasAvatar ? (
                           <div className="flex items-center gap-3">
-                            {renderAvatar(row.original)}
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </div>
                         ) : (

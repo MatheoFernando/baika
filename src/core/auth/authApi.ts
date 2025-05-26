@@ -1,40 +1,35 @@
 import instance from "@/src/lib/api";
 import Cookies from "js-cookie";
-
-
+import { jwtDecode } from "jwt-decode";
 export const loginRequest = async (number: string, password: string) => {
   const response = await instance.post("/userAuth/signIn", { number, password });
-  return response.data;
+  return response.data; 
 };
 
-export const useLogin = async (
-  number: string,
-  password: string,
-  lembrar: boolean = false
-) => {
+
+export const useLogin = async (number: string, password: string) => {
   const data = await loginRequest(number, password);
-      const token = data.token;
-  const user = data.data.data;
-  const expires = lembrar ? 7 : 1;
-
-  Cookies.set("token", token, { expires });
-  Cookies.set("user", JSON.stringify(user), { expires });
-  return { token, user };
+  const token = data.token;
+  Cookies.set("token", token);
+  return { token };
 };
-export const getUser = () => {
+
+export const getUser = async () => {
   const token = Cookies.get("token");
-  const userRaw = Cookies.get("user");
 
   if (!token) throw new Error("Token não encontrado");
-  if (!userRaw) throw new Error("Usuário não encontrado");
 
-  const user = JSON.parse(userRaw);
-
-  return user;
+  try {
+    const decoded: any = jwtDecode(token);
+    const userId = decoded.value;
+    const response = await instance.get(`/user/${userId}`);
+    return response.data.data; 
+  } catch (error) {
+    throw new Error("Erro ao buscar usuário");
+  }
 };
 
 export const logout = () => {
   Cookies.remove("token");
-  Cookies.remove("user");
- window.location.href = "/login";
+  window.location.href = "/login";
 };

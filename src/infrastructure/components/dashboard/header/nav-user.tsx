@@ -40,21 +40,26 @@ export function NavUser() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
+useEffect(() => {
+  async function fetchUser() {
     try {
-      const user = getUser();
+      const user = await getUser(); 
       setUser({
         name: user.name,
         email: user.email,
-        avatar: "",
+        avatar: user.avatar || "",
       });
     } catch (e) {
       console.error("Erro ao carregar usuário:", e);
     }
-  }, []);
+  }
 
-  if (!user) return <LoadingScreen message="Fazendo logout" />;
+  fetchUser(); 
+}, []);
 
+  if (!user) {
+    return <LoadingScreen message="Carregando usuário..." />;
+  }
   return (
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DropdownMenu>

@@ -21,8 +21,7 @@ import {
 const MOCK_DATA = [
   { id: 1, email: "joao@email.com", category: "Usuários" },
   { id: 2, email: "maria@email.com", category: "Usuários" },
-  { id: 3, name: "Projeto Alpha", category: "Projetos" },
-  { id: 4, name: "Projeto Beta", category: "Projetos" },
+
 ]
 
 export default function SearchDialog() {

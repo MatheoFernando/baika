@@ -140,7 +140,7 @@ export function DataTable<TData, TValue>({
               <TableCell key={`skeleton-cell-${i}-${j}`}>
                 {j === 0 && hasAvatar ? (
                   <div className="flex items-center gap-3">
-                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-8 w-full" />
                     <Skeleton className="h-4 w-full" />
                   </div>
                 ) : (
@@ -160,7 +160,7 @@ export function DataTable<TData, TValue>({
           <Card key={index} className="cursor-pointer">
             <CardHeader className="pb-2">
               <div className="flex items-center space-x-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-10 w-40" />
                 <Skeleton className="h-4 w-40" />
               </div>
             </CardHeader>

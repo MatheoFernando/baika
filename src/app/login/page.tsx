@@ -7,11 +7,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import logo from "@/public/logo.png";
-import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLogin } from "@/src/core/auth/authApi";
 import { Eye, EyeOff } from "lucide-react";
+import toast from "react-hot-toast";
 
 const schema = z.object({
   number: z
@@ -40,7 +40,7 @@ function Login() {
   const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true);
-      await useLogin(data.number, data.password, lembrar);
+      await useLogin(data.number, data.password);
       toast.success("Login realizado com sucesso!");
       router.push("/dashboard");
     } catch (error: unknown) {
@@ -202,21 +202,7 @@ function Login() {
 
 
                       <div className="flex justify-between items-center mb-4">
-                        <div className="flex items-center">
-                          <input
-                            id="lembrar"
-                            type="checkbox"
-                            checked={lembrar}
-                            onChange={() => setLembrar(!lembrar)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded checked:text-blue-600"
-                          />
-                          <label
-                            htmlFor="lembrar"
-                            className="ml-2 block text-sm font-medium text-gray-500"
-                          >
-                            Lembrar de mim
-                          </label>
-                        </div>
+                      
                         <Link
                           href="#"
                           className="text-sm text-blue-600 hover:text-blue-800"

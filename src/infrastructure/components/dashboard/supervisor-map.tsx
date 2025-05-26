@@ -1,18 +1,19 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react"
-import { useRouter } from "next/navigation"
-import axios from "axios"
-import { format, isToday, isYesterday, subDays } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { APIProvider, Map, useMap, useMapsLibrary, AdvancedMarker, InfoWindow } from "@vis.gl/react-google-maps"
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { format, isToday, isYesterday, subDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
-  Calendar,
+  APIProvider,
+  Map,
+  useMap,
+  useMapsLibrary,
+  AdvancedMarker,
+  InfoWindow,
+} from "@vis.gl/react-google-maps";
+import {
   CalendarIcon,
-  CheckCircle2,
-  Clock,
-  Eye,
-  EyeOff,
   Filter,
   Loader2,
   MapPin,
@@ -23,64 +24,72 @@ import {
   UserCheck,
   UserMinus,
   Users,
-} from "lucide-react"
-import { cn } from "@/src/lib/utils"
-import { Button } from "../../ui/button"
-import { Label } from "../../ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover"
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
-import { Badge } from "../../ui/badge"
-import { Input } from "../../ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs"
-import { ScrollArea } from "../../ui/scroll-area"
-import { Separator } from "../../ui/separator"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "../../ui/sheet"
-import instance from "@/src/lib/api"
-import { toast } from "sonner"
-import { Switch } from "../../ui/switch"
+  Wifi,
+  WifiOff,
+} from "lucide-react";
+import { cn } from "@/src/lib/utils";
+import { Button } from "../../ui/button";
+import { Label } from "../../ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { Badge } from "../../ui/badge";
+import { Input } from "../../ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
+import { ScrollArea } from "../../ui/scroll-area";
+import { Separator } from "../../ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../../ui/sheet";
+import instance from "@/src/lib/api";
+import toast from "react-hot-toast";
+import { Calendar } from "../../ui/calendar";
 
 interface Supervisor {
-  employeeId: string
-  userId: string
-  name: string
-  lat?: number
-  lng?: number
-  time?: string
-  route?: Record<string, { lat: number; lng: number }>
+  employeeId: string;
+  userId: string;
+  name: string;
+  lat?: number;
+  lng?: number;
+  time?: string;
+  route?: Record<string, { lat: number; lng: number }>;
 }
 
 interface MarkerWithInfo {
-  marker: google.maps.Marker
-  employeeId: string
+  marker: google.maps.Marker;
+  employeeId: string;
 }
 
+const LUANDA_COORDS = { lat: -8.8368, lng: 13.2343 };
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+const ONLINE_THRESHOLD_MINUTES = .1;
 
-const LUANDA_COORDS = { lat: -8.8368, lng: 13.2343 }
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
-const ONLINE_THRESHOLD_MINUTES = 15
-
-// Helper Components
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center w-full h-40">
     <Loader2 className="w-8 h-8 animate-spin text-primary" />
   </div>
-)
+);
 
 const MapDirectionsRenderer = ({
   origin,
   destination,
   waypoints,
 }: {
-  origin: google.maps.LatLng
-  destination: google.maps.LatLng
-  waypoints: google.maps.DirectionsWaypoint[]
+  origin: google.maps.LatLng;
+  destination: google.maps.LatLng;
+  waypoints: google.maps.DirectionsWaypoint[];
 }) => {
-  const map = useMap()
-  const routesLibrary = useMapsLibrary("routes")
-  const [directionsRenderer, setDirectionsRenderer] = useState<google.maps.DirectionsRenderer | null>(null)
+  const map = useMap();
+  const routesLibrary = useMapsLibrary("routes");
+  const [directionsRenderer, setDirectionsRenderer] =
+    useState<google.maps.DirectionsRenderer | null>(null);
 
   useEffect(() => {
-    if (!routesLibrary || !map) return
+    if (!routesLibrary || !map) return;
 
     const renderer = new routesLibrary.DirectionsRenderer({
       map,
@@ -90,19 +99,20 @@ const MapDirectionsRenderer = ({
         strokeWeight: 5,
         strokeOpacity: 0.7,
       },
-    })
+    });
 
-    setDirectionsRenderer(renderer)
+    setDirectionsRenderer(renderer);
 
     return () => {
-      if (renderer) renderer.setMap(null)
-    }
-  }, [routesLibrary, map])
+      if (renderer) renderer.setMap(null);
+    };
+  }, [routesLibrary, map]);
 
   useEffect(() => {
-    if (!routesLibrary || !directionsRenderer || !origin || !destination) return
+    if (!routesLibrary || !directionsRenderer || !origin || !destination)
+      return;
 
-    const directionsService = new routesLibrary.DirectionsService()
+    const directionsService = new routesLibrary.DirectionsService();
 
     directionsService.route(
       {
@@ -114,376 +124,393 @@ const MapDirectionsRenderer = ({
       },
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK && result) {
-          directionsRenderer.setDirections(result)
+          directionsRenderer.setDirections(result);
         }
-      },
-    )
+      }
+    );
 
     return () => {
-      if (directionsRenderer) directionsRenderer.setMap(null)
-    }
-  }, [routesLibrary, directionsRenderer, origin, destination, waypoints])
+      if (directionsRenderer) directionsRenderer.setMap(null);
+    };
+  }, [routesLibrary, directionsRenderer, origin, destination, waypoints]);
 
-  return null
-}
+  return null;
+};
 
 const SupervisorMarker = ({
   user,
   isSelected,
   onClick,
 }: {
-  user: Supervisor
-  isSelected: boolean
-  onClick: () => void
+  user: Supervisor;
+  isSelected: boolean;
+  onClick: () => void;
 }) => {
-  const [showInfo, setShowInfo] = useState(false)
-  const isOnline = useMemo(() => isUserOnline(user), [user])
+  const [showInfo, setShowInfo] = useState(false);
+  const isOnline = useMemo(() => isUserOnline(user), [user]);
 
-  if (!user.lat || !user.lng) return null
+  if (!user.lat || !user.lng) return null;
 
   return (
     <AdvancedMarker
       position={{ lat: user.lat, lng: user.lng }}
       onClick={() => {
-        setShowInfo(true)
-        onClick()
+        setShowInfo(true);
+        onClick();
       }}
       zIndex={isSelected ? 999 : isOnline ? 100 : 10}
     >
-      <div className={cn("relative flex items-center justify-center", isSelected && "scale-125 z-50")}>
-        <div className={cn("rounded-full p-2 shadow-md", isOnline ? "bg-green-500" : "bg-red-500")}>
-          <MapPin className="h-5 w-5 text-white" />
+      <div
+        className={cn(
+          "relative flex items-center justify-center transition-all duration-200 hover:scale-110",
+          isSelected && "scale-125 z-50"
+        )}
+      >
+        <div
+          className={cn(
+            "rounded-full p-3 shadow-lg border-2 border-white transition-colors duration-200",
+            isOnline
+              ? "bg-gradient-to-r from-green-400 to-green-600 shadow-green-200"
+              : "bg-gradient-to-r from-red-400 to-red-600 shadow-red-200"
+          )}
+        >
+          <MapPin className="h-6 w-6 text-white drop-shadow-sm" />
         </div>
         {isOnline && (
-          <span className="absolute -top-1 -right-1">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-            </span>
-          </span>
+          <div className="absolute -top-1 -right-1">
+            <div className="relative flex h-4 w-4">
+              <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></div>
+              <div className="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white"></div>
+            </div>
+          </div>
         )}
       </div>
 
       {showInfo && (
-        <InfoWindow position={{ lat: user.lat, lng: user.lng }} onCloseClick={() => setShowInfo(false)}>
-          <div className="p-2 max-w-[200px]">
-            <h3 className="font-medium text-sm">{user.name}</h3>
-            <div className="flex items-center mt-1 text-xs">
+        <InfoWindow
+          position={{ lat: user.lat, lng: user.lng }}
+          onCloseClick={() => setShowInfo(false)}
+          className="min-w-[150px] p-0"
+        >
+          <div className="p-4 pr-8">
+            <h3 className="font-semibold text-base text-gray-900 mb-3">
+              {user.name}
+            </h3>
+
+            <div className="flex items-center gap-2">
               {isOnline ? (
-                <div className="flex items-center text-green-600">
-                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                  <span>Online</span>
-                </div>
+                <>
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                    <Wifi className="h-3 w-3 text-green-600" />
+                  </div>
+                  <span className="text-sm font-medium text-green-700">
+                    Online
+                  </span>
+                </>
               ) : (
-                <div className="flex items-center text-gray-500">
-                  <Clock className="h-3 w-3 mr-1" />
-                  <span>Visto: {formatLastSeen(user.time)}</span>
-                </div>
+                <>
+                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-red-100">
+                    <WifiOff className="h-3 w-3 text-red-600" />
+                  </div>
+                  <span className="text-sm font-medium text-red-700">
+                    Offline
+                  </span>
+                </>
               )}
             </div>
           </div>
         </InfoWindow>
       )}
     </AdvancedMarker>
-  )
-}
+  );
+};
 
-// Helper Functions
 const isUserOnline = (user: Supervisor): boolean => {
-  if (!user?.time) return false
+  if (!user?.time) return false;
 
-  const userTime = new Date(user.time)
-  const currentTime = new Date()
-  const diffInMinutes = (currentTime.getTime() - userTime.getTime()) / (1000 * 60)
+  const userTime = new Date(user.time);
+  const currentTime = new Date();
+  const diffInMinutes =
+    (currentTime.getTime() - userTime.getTime()) / (1000 * 60);
 
-  return diffInMinutes <= ONLINE_THRESHOLD_MINUTES
-}
+  return diffInMinutes <= ONLINE_THRESHOLD_MINUTES;
+};
 
 const formatLastSeen = (timeString?: string): string => {
-  if (!timeString) return "Desconhecido"
+  if (!timeString) return "Desconhecido";
 
-  const date = new Date(timeString)
+  const date = new Date(timeString);
 
   if (isToday(date)) {
-    return `Hoje às ${format(date, "HH:mm")}`
+    return `Hoje às ${format(date, "HH:mm")}`;
   } else if (isYesterday(date)) {
-    return `Ontem às ${format(date, "HH:mm")}`
+    return `Ontem às ${format(date, "HH:mm")}`;
   } else {
-    return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+    return format(date, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
   }
-}
+};
 
 const wasUserOnlineOnDate = (user: Supervisor, date: Date): boolean => {
-  if (!user?.time) return false
+  if (!user?.time) return false;
 
-  const userTime = new Date(user.time)
-
+  const userTime = new Date(user.time);
   return (
     userTime.getDate() === date.getDate() &&
     userTime.getMonth() === date.getMonth() &&
     userTime.getFullYear() === date.getFullYear()
-  )
-}
+  );
+};
 
-// Main Component
 export default function SupervisorMap() {
-  const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"routes" | "online">("routes")
-  const [users, setUsers] = useState<Supervisor[]>([])
-  const [filteredUsers, setFilteredUsers] = useState<Supervisor[]>([])
-  const [selectedUser, setSelectedUser] = useState<Supervisor | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [showRouteButton, setShowRouteButton] = useState(false)
-  const [showRoute, setShowRoute] = useState(false)
-  const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([])
-  const [showOnlineOnly, setShowOnlineOnly] = useState(false)
-  const [showOfflineOnly, setShowOfflineOnly] = useState(false)
-  const [showInfoCards, setShowInfoCards] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"routes" | "online">("routes");
+  const [users, setUsers] = useState<Supervisor[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<Supervisor[]>([]);
+  const [selectedUser, setSelectedUser] = useState<Supervisor | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showRouteButton, setShowRouteButton] = useState(false);
+  const [showRoute, setShowRoute] = useState(false);
+  const [markers, setMarkers] = useState<{ lat: number; lng: number }[]>([]);
+  const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [showOfflineOnly, setShowOfflineOnly] = useState(false);
+  const [showInfoCards, setShowInfoCards] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Fetch users data
   const fetchUsers = useCallback(async () => {
     try {
-      setIsLoading(true)
-      const response = await instance.get(`/user?size=500`)
+      setIsLoading(true);
+      const response = await instance.get(`/user?size=100`);
 
       if (response.data && Array.isArray(response.data.data.data)) {
-        setUsers(response.data.data.data)
-        setFilteredUsers(response.data.data.data)
+        setUsers(response.data.data.data);
+        setFilteredUsers(response.data.data.data);
       }
     } catch (error) {
-      console.error("Error fetching users:", error)
-      toast()
+      console.error("Error fetching users:", error);
+      toast.error("Erro ao carregar supervisores");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [toast])
+  }, []);
 
-  // Fetch geolocation data for a specific user
   const fetchGeoLocation = useCallback(
-    async (user: Supervisor) => {
-      if (!user) return
+    async (users: Supervisor) => {
+      if (!users) return;
 
       try {
-        setIsLoading(true)
-        const response = await axios.get( `/geoLocation/findUserGeo/${user.employeeId}?day=${selectedDate.getDate()}&month=${
+        setIsLoading(true);
+        const response = await instance.get(
+          `/geoLocation/findUserGeo/${
+            users.employeeId
+          }?day=${selectedDate.getDate()}&month=${
             selectedDate.getMonth() + 1
-          }&year=${selectedDate.getFullYear()}`,
-        )
+          }&year=${selectedDate.getFullYear()}`
+        );
 
         if (response.data.data.length === 0) {
-          toast.info()
-          return
+          toast.error("Nenhuma localização encontrada para esta data");
+          return;
         }
 
-        const routePoints: { lat: number; lng: number }[] = []
+        const routePoints: { lat: number; lng: number }[] = [];
 
         response.data.data.forEach((markerData: any) => {
           if (markerData.route && typeof markerData.route === "object") {
             Object.values(markerData.route).forEach((location: any) => {
               if (location.lat && location.lng) {
-                routePoints.push({ lat: location.lat, lng: location.lng })
+                routePoints.push({ lat: location.lat, lng: location.lng });
               }
-            })
+            });
           }
-        })
+        });
 
         if (routePoints.length > 0) {
-          setMarkers(routePoints)
-          setShowRouteButton(true)
-          toast()
+          setMarkers(routePoints);
+          setShowRouteButton(true);
+          toast.success("Rota carregada com sucesso");
         } else {
-          toast()
+          toast.error("Nenhuma rota encontrada para esta data");
         }
       } catch (error) {
-        console.error("Error fetching geolocation:", error)
-        toast.info()
+        console.error("Error fetching geolocation:", error);
+        toast.error("Erro ao carregar localização");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     },
-    [selectedDate, toast],
-  )
+    [selectedDate]
+  );
 
-  // Fetch all users' last positions
   const fetchAllUsersPositions = useCallback(async () => {
     try {
-      setIsLoading(true)
-      const response = await instance.get(`/geolocation/findAllUserLastPosition`)
+      setIsLoading(true);
+      const response = await instance.get(
+        `/geolocation/findAllUserLastPosition`
+      );
 
       if (response.data && Array.isArray(response.data.data)) {
-        setUsers(response.data.data)
-        applyFilters(response.data.data)
+        setUsers(response.data.data);
+        applyFilters(response.data.data);
       }
     } catch (error) {
-      console.error("Error fetching all users positions:", error)
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar as posições dos supervisores",
-        variant: "destructive",
-      })
+      console.error("Error fetching all users positions:", error);
+      toast.error("Não foi possível carregar as posições dos supervisores");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [toast])
+  }, []);
 
-  // Apply filters to users
   const applyFilters = useCallback(
     (usersToFilter: Supervisor[]) => {
-      if (!usersToFilter || !Array.isArray(usersToFilter)) return
+      if (!usersToFilter || !Array.isArray(usersToFilter)) return;
 
-      let result = [...usersToFilter]
+      let result = [...usersToFilter];
 
-      // Search term filter
       if (searchTerm && searchTerm.trim().length >= 2) {
-        result = result.filter((user) => user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        result = result.filter(
+          (user) =>
+            user.name &&
+            user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
 
-      // Online/offline filter
       if (showOnlineOnly) {
-        result = result.filter((user) => isUserOnline(user))
+        result = result.filter((user) => isUserOnline(user));
       } else if (showOfflineOnly) {
-        result = result.filter((user) => !isUserOnline(user))
+        result = result.filter((user) => !isUserOnline(user));
       }
 
-      // Date filter (for online tab)
       if (activeTab === "online" && selectedDate) {
-        result = result.filter((user) => wasUserOnlineOnDate(user, selectedDate))
+        result = result.filter((user) =>
+          wasUserOnlineOnDate(user, selectedDate)
+        );
       }
 
-      setFilteredUsers(result)
+      setFilteredUsers(result);
     },
-    [searchTerm, showOnlineOnly, showOfflineOnly, activeTab, selectedDate],
-  )
+    [searchTerm, showOnlineOnly, showOfflineOnly, activeTab, selectedDate]
+  );
 
-  // Initial data loading
   useEffect(() => {
     if (activeTab === "routes") {
-      fetchUsers()
+      fetchUsers();
     } else {
-      fetchAllUsersPositions()
+      fetchAllUsersPositions();
     }
-  }, [activeTab, fetchUsers, fetchAllUsersPositions])
+  }, [activeTab, fetchUsers, fetchAllUsersPositions]);
 
-  // Apply filters when dependencies change
   useEffect(() => {
-    applyFilters(users)
-  }, [users, applyFilters])
+    applyFilters(users);
+  }, [users, applyFilters]);
 
-  // Handle user selection
   useEffect(() => {
     if (selectedUser && activeTab === "routes") {
-      fetchGeoLocation(selectedUser)
+      fetchGeoLocation(selectedUser);
     }
-  }, [selectedUser, selectedDate, activeTab, fetchGeoLocation])
-
-  // Handle tab change
+  }, [selectedUser, selectedDate, activeTab, fetchGeoLocation]);
   const handleTabChange = (value: string) => {
-    setActiveTab(value as "routes" | "online")
-    setSelectedUser(null)
-    setShowRoute(false)
-    setMarkers([])
-    setShowRouteButton(false)
-  }
+    setActiveTab(value as "routes" | "online");
+    setSelectedUser(null);
+    setShowRoute(false);
+    setMarkers([]);
+    setShowRouteButton(false);
+    setSearchTerm("");
+  };
 
-  // Handle user selection
   const handleUserSelection = (user: Supervisor) => {
-    setSelectedUser(user)
-    setShowRoute(false)
-  }
+    setSelectedUser(user);
+    setShowRoute(false);
+  };
 
-  // Handle date change
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
-      setSelectedDate(date)
+      setSelectedDate(date);
       if (selectedUser && activeTab === "routes") {
-        setShowRoute(false)
-        fetchGeoLocation(selectedUser)
+        setShowRoute(false);
+        fetchGeoLocation(selectedUser);
       } else if (activeTab === "online") {
-        applyFilters(users)
+        applyFilters(users);
       }
     }
-  }
+  };
 
-  // Toggle route display
   const toggleRoute = () => {
-    setShowRoute(!showRoute)
-  }
+    setShowRoute(!showRoute);
+  };
 
-  // Refresh data
   const refreshData = () => {
     if (activeTab === "routes") {
       if (selectedUser) {
-        fetchGeoLocation(selectedUser)
+        fetchGeoLocation(selectedUser);
       } else {
-        fetchUsers()
+        fetchUsers();
       }
     } else {
-      fetchAllUsersPositions()
+      fetchAllUsersPositions();
     }
-  }
+  };
 
-  // Toggle online filter
   const toggleOnlineFilter = () => {
-    setShowOnlineOnly(true)
-    setShowOfflineOnly(false)
-  }
+    setShowOnlineOnly(true);
+    setShowOfflineOnly(false);
+  };
 
-  // Toggle offline filter
   const toggleOfflineFilter = () => {
-    setShowOfflineOnly(true)
-    setShowOnlineOnly(false)
-  }
+    setShowOfflineOnly(true);
+    setShowOnlineOnly(false);
+  };
 
-  // Show all users
   const showAllUsers = () => {
-    setShowOnlineOnly(false)
-    setShowOfflineOnly(false)
-  }
+    setShowOnlineOnly(false);
+    setShowOfflineOnly(false);
+  };
 
-  // Toggle info cards
   const toggleInfoCards = () => {
-    setShowInfoCards(!showInfoCards)
-  }
+    setShowInfoCards(!showInfoCards);
+  };
 
-  // Set today's date
   const setToday = () => {
-    setSelectedDate(new Date())
-  }
+    setSelectedDate(new Date());
+  };
 
-  // Set yesterday's date
   const setYesterday = () => {
-    setSelectedDate(subDays(new Date(), 1))
-  }
+    setSelectedDate(subDays(new Date(), 1));
+  };
 
-  // Count online users
-  const onlineUsersCount = useMemo(() => filteredUsers.filter((user) => isUserOnline(user)).length, [filteredUsers])
+  const onlineUsersCount = useMemo(
+    () => filteredUsers.filter((user) => isUserOnline(user)).length,
+    [filteredUsers]
+  );
 
-  // Count offline users
-  const offlineUsersCount = useMemo(() => filteredUsers.filter((user) => !isUserOnline(user)).length, [filteredUsers])
+  const offlineUsersCount = useMemo(
+    () => filteredUsers.filter((user) => !isUserOnline(user)).length,
+    [filteredUsers]
+  );
 
-  // Prepare waypoints for route
   const routeWaypoints = useMemo(() => {
-    if (!markers.length || markers.length < 2) return null
+    if (!markers.length || markers.length < 2) return null;
 
-    const origin = new google.maps.LatLng(markers[0].lat, markers[0].lng)
-    const destination = new google.maps.LatLng(markers[markers.length - 1].lat, markers[markers.length - 1].lng)
+    const origin = new google.maps.LatLng(markers[0].lat, markers[0].lng);
+    const destination = new google.maps.LatLng(
+      markers[markers.length - 1].lat,
+      markers[markers.length - 1].lng
+    );
 
     const waypoints = markers.slice(1, -1).map((point) => ({
       location: new google.maps.LatLng(point.lat, point.lng),
       stopover: true,
-    }))
+    }));
 
-    return { origin, destination, waypoints }
-  }, [markers])
+    return { origin, destination, waypoints };
+  }, [markers]);
 
   return (
-    <div className="flex flex-col h-screen">
-      <header className="border-b bg-background z-10">
+    <div className="flex flex-col h-screen bg-gray-50">
+      <header className="border-b bg-white shadow-sm z-10">
         <div className="container flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="md:hidden">
@@ -491,20 +518,39 @@ export default function SupervisorMap() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
-                <SheetHeader className="p-4 border-b">
-                  <SheetTitle>Filtros e Opções</SheetTitle>
-                  <SheetDescription>Selecione supervisores e visualize suas rotas</SheetDescription>
+                <SheetHeader className="p-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <SheetTitle className="text-gray-800">
+                    Filtros e Opções
+                  </SheetTitle>
+                  <SheetDescription className="text-gray-600">
+                    Selecione supervisores e visualize suas rotas
+                  </SheetDescription>
                 </SheetHeader>
                 <div className="p-4">{renderSidebar()}</div>
               </SheetContent>
             </Sheet>
-            <h1 className="text-lg font-semibold">
-              {activeTab === "routes" ? "Rotas dos Supervisores" : "Supervisores Online"}
-            </h1>
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <MapPin className="h-5 w-5 text-blue-600" />
+              </div>
+              <h1 className="text-lg font-semibold text-gray-800">
+                {activeTab === "routes"
+                  ? "Rotas dos Supervisores"
+                  : "Supervisores Online"}
+              </h1>
+            </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={refreshData} className="gap-1">
-              <RefreshCw className="h-3.5 w-3.5" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshData}
+              className="gap-2 cursor-pointer hover:bg-blue-50 border-blue-200"
+              disabled={isLoading}
+            >
+              <RefreshCw
+                className={cn("h-4 w-4", isLoading && "animate-spin")}
+              />
               <span className="hidden sm:inline">Atualizar</span>
             </Button>
           </div>
@@ -512,7 +558,7 @@ export default function SupervisorMap() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="hidden md:flex md:w-[300px] lg:w-[350px] flex-col border-r bg-background">
+        <div className="hidden md:flex md:w-[320px] lg:w-[380px] flex-col border-r bg-white shadow-sm">
           {renderSidebar()}
         </div>
 
@@ -524,8 +570,16 @@ export default function SupervisorMap() {
               gestureHandling="greedy"
               mapId="supervisor-map"
               className="w-full h-full"
+              options={{
+                styles: [
+                  {
+                    featureType: "poi",
+                    elementType: "labels",
+                    stylers: [{ visibility: "off" }],
+                  },
+                ],
+              }}
             >
-              {/* Render markers for online tab */}
               {activeTab === "online" &&
                 filteredUsers.map((user) => (
                   <SupervisorMarker
@@ -536,26 +590,34 @@ export default function SupervisorMap() {
                   />
                 ))}
 
-              {/* Render markers for routes tab */}
               {activeTab === "routes" &&
                 markers.map((marker, index) => (
                   <AdvancedMarker
                     key={`route-${index}`}
                     position={{ lat: marker.lat, lng: marker.lng }}
-                    zIndex={index === 0 ? 999 : index === markers.length - 1 ? 998 : 10}
+                    zIndex={
+                      index === 0
+                        ? 999
+                        : index === markers.length - 1
+                        ? 998
+                        : 10
+                    }
                   >
                     <div
                       className={cn(
-                        "rounded-full p-1.5 shadow-md",
-                        index === 0 ? "bg-green-500" : index === markers.length - 1 ? "bg-red-500" : "bg-blue-500",
+                        "rounded-full p-2 shadow-lg border-2 border-white transition-all duration-200 hover:scale-110",
+                        index === 0
+                          ? "bg-gradient-to-r from-green-400 to-green-600"
+                          : index === markers.length - 1
+                          ? "bg-gradient-to-r from-red-400 to-red-600"
+                          : "bg-gradient-to-r from-blue-400 to-blue-600"
                       )}
                     >
-                      <MapPin className="h-4 w-4 text-white" />
+                      <MapPin className="h-5 w-5 text-white drop-shadow-sm" />
                     </div>
                   </AdvancedMarker>
                 ))}
 
-              {/* Render route */}
               {showRoute && routeWaypoints && (
                 <MapDirectionsRenderer
                   origin={routeWaypoints.origin}
@@ -565,57 +627,33 @@ export default function SupervisorMap() {
               )}
             </Map>
           </APIProvider>
-
-          {/* Mobile action buttons */}
-          <div className="absolute bottom-4 right-4 flex flex-col gap-2 md:hidden">
-            {activeTab === "routes" && showRouteButton && (
-              <Button
-                onClick={toggleRoute}
-                className="rounded-full shadow-lg"
-                variant={showRoute ? "default" : "outline"}
-              >
-                <Route className="h-4 w-4 mr-2" />
-                {showRoute ? "Ocultar Rota" : "Mostrar Rota"}
-              </Button>
-            )}
-
-            {activeTab === "online" && (
-              <Button
-                onClick={toggleInfoCards}
-                className="rounded-full shadow-lg"
-                variant={showInfoCards ? "default" : "outline"}
-              >
-                {showInfoCards ? (
-                  <>
-                    <EyeOff className="h-4 w-4 mr-2" />
-                    Ocultar Cards
-                  </>
-                ) : (
-                  <>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Mostrar Cards
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
         </div>
       </div>
     </div>
-  )
+  );
 
-  // Render sidebar content
   function renderSidebar() {
     return (
       <div className="flex flex-col h-full">
-        <Tabs defaultValue="routes" value={activeTab} onValueChange={handleTabChange} className="w-full">
+        <Tabs
+          defaultValue="routes"
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <div className="px-4 pt-4">
-            <TabsList className="w-full">
-              <TabsTrigger value="routes" className="flex-1">
+            <TabsList className="w-full bg-gray-100">
+              <TabsTrigger
+                value="routes"
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
                 <Route className="h-4 w-4 mr-2" />
                 Rotas
               </TabsTrigger>
-              <TabsTrigger value="online" className="flex-1">
+              <TabsTrigger
+                value="online"
+                className="flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
                 <UserCheck className="h-4 w-4 mr-2" />
                 Online
               </TabsTrigger>
@@ -624,28 +662,67 @@ export default function SupervisorMap() {
 
           <TabsContent value="routes" className="flex-1 flex flex-col p-0">
             <div className="p-4 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="search-supervisor">Buscar supervisor</Label>
+              <div className="space-y-3">
+                <Label
+                  htmlFor="search-supervisor"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Buscar supervisor
+                </Label>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="search-supervisor"
-                    placeholder="Nome do supervisor..."
-                    className="pl-8"
+                    placeholder="Digite o nome do supervisor..."
+                    className="pl-10 border-gray-200 focus:border-blue-300 focus:ring-blue-200"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Selecionar data</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Selecionar data
+                  </Label>
                   <div className="flex gap-1">
-                    <Button variant="outline" size="sm" onClick={setToday} className="h-7 text-xs">
+                    <Button
+                      variant={
+                        selectedDate.toDateString() ===
+                        new Date().toDateString()
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      onClick={setToday}
+                      className={cn(
+                        "h-8 text-xs cursor-pointer",
+                        selectedDate.toDateString() ===
+                          new Date().toDateString()
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-blue-50 border-blue-200"
+                      )}
+                    >
                       Hoje
                     </Button>
-                    <Button variant="outline" size="sm" onClick={setYesterday} className="h-7 text-xs">
+                    <Button
+                      variant={
+                        selectedDate.toDateString() ===
+                        subDays(new Date(), 1).toDateString()
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      onClick={setYesterday}
+                      className={cn(
+                        "h-8 text-xs cursor-pointer",
+                        selectedDate.toDateString() ===
+                          subDays(new Date(), 1).toDateString()
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-blue-50 border-blue-200"
+                      )}
+                    >
                       Ontem
                     </Button>
                   </div>
@@ -653,54 +730,91 @@ export default function SupervisorMap() {
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal border-gray-200 hover:bg-gray-50"
+                    >
+                      <CalendarIcon className="mr-3 h-4 w-4 text-gray-500" />
                       {format(selectedDate, "PPP", { locale: ptBR })}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={selectedDate} onSelect={handleDateChange} initialFocus />
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateChange}
+                      initialFocus
+                      className="rounded-md border-0"
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
 
-              <Separator />
+              <Separator className="bg-gray-200" />
 
-              <div className="space-y-2">
-                <Label>Supervisores ({filteredUsers.length})</Label>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Supervisores
+                  </Label>
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700 border-blue-200"
+                  >
+                    {filteredUsers.length}
+                  </Badge>
+                </div>
                 {isLoading ? (
                   <LoadingSpinner />
                 ) : (
-                  <ScrollArea className="h-[250px] rounded-md border">
-                    <div className="p-4 space-y-2">
+                  <ScrollArea className="h-[280px] rounded-lg border border-gray-200 bg-gray-50">
+                    <div className="p-3 space-y-2">
                       {filteredUsers.length === 0 ? (
-                        <p className="text-sm text-muted-foreground text-center py-4">Nenhum supervisor encontrado</p>
+                        <div className="text-center py-8">
+                          <User className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                          <p className="text-sm text-gray-500">
+                            Nenhum supervisor encontrado
+                          </p>
+                        </div>
                       ) : (
                         filteredUsers.map((user) => (
                           <div
                             key={user.employeeId}
                             className={cn(
-                              "flex items-center space-x-2 rounded-md p-2 cursor-pointer hover:bg-muted",
-                              selectedUser?.employeeId === user.employeeId && "bg-muted",
+                              "flex items-center space-x-3 rounded-lg p-3 cursor-pointer transition-all duration-200",
+                              "hover:bg-white hover:shadow-sm border border-transparent",
+                              selectedUser?.employeeId === user.employeeId &&
+                                "bg-blue-50 border-blue-200 shadow-sm"
                             )}
                             onClick={() => handleUserSelection(user)}
                           >
                             <div
                               className={cn(
-                                "rounded-full p-1",
-                                selectedUser?.employeeId === user.employeeId ? "bg-primary" : "bg-muted-foreground/20",
+                                "rounded-full p-2 transition-colors duration-200",
+                                selectedUser?.employeeId === user.employeeId
+                                  ? "bg-blue-500"
+                                  : "bg-gray-200"
                               )}
                             >
                               <User
                                 className={cn(
                                   "h-4 w-4",
                                   selectedUser?.employeeId === user.employeeId
-                                    ? "text-primary-foreground"
-                                    : "text-muted-foreground",
+                                    ? "text-white"
+                                    : "text-gray-600"
                                 )}
                               />
                             </div>
-                            <span className="text-sm">{user.name}</span>
+                            <span
+                              className={cn(
+                                "text-sm font-medium",
+                                selectedUser?.employeeId === user.employeeId
+                                  ? "text-blue-700"
+                                  : "text-gray-700"
+                              )}
+                            >
+                              {user.name}
+                            </span>
                           </div>
                         ))
                       )}
@@ -710,8 +824,17 @@ export default function SupervisorMap() {
               </div>
 
               {showRouteButton && (
-                <Button onClick={toggleRoute} className="w-full" variant={showRoute ? "default" : "outline"}>
-                  <Route className="h-4 w-4 mr-2" />
+                <Button
+                  onClick={toggleRoute}
+                  className={cn(
+                    "w-full gap-2 transition-all cursor-pointer duration-200",
+                    showRoute
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                  )}
+                  variant={showRoute ? "default" : "outline"}
+                >
+                  <Route className="h-4 w-4" />
                   {showRoute ? "Ocultar Rota" : "Mostrar Rota"}
                 </Button>
               )}
@@ -741,7 +864,11 @@ export default function SupervisorMap() {
                     size="sm"
                     variant={showOnlineOnly ? "default" : "outline"}
                     onClick={toggleOnlineFilter}
-                    className="gap-1"
+                    className={cn(
+                      "gap-1 cursor-pointer",
+                      showOnlineOnly &&
+                        "bg-blue-600 text-white hover:bg-blue-700"
+                    )}
                   >
                     <UserCheck className="h-3.5 w-3.5" />
                     Online
@@ -750,16 +877,29 @@ export default function SupervisorMap() {
                     size="sm"
                     variant={showOfflineOnly ? "default" : "outline"}
                     onClick={toggleOfflineFilter}
-                    className="gap-1"
+                    className={cn(
+                      "gap-1 cursor-pointer",
+                      showOfflineOnly &&
+                        "bg-blue-600 text-white hover:bg-blue-700"
+                    )}
                   >
                     <UserMinus className="h-3.5 w-3.5" />
                     Offline
                   </Button>
                   <Button
                     size="sm"
-                    variant={!showOnlineOnly && !showOfflineOnly ? "default" : "outline"}
+                    variant={
+                      !showOnlineOnly && !showOfflineOnly
+                        ? "default"
+                        : "outline"
+                    }
                     onClick={showAllUsers}
-                    className="gap-1"
+                    className={cn(
+                      "gap-1 cursor-pointer",
+                      !showOnlineOnly &&
+                        !showOfflineOnly &&
+                        "bg-blue-600 text-white hover:bg-blue-700"
+                    )}
                   >
                     <Users className="h-3.5 w-3.5" />
                     Todos
@@ -769,19 +909,44 @@ export default function SupervisorMap() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="show-cards">Mostrar cards</Label>
-                  <Switch id="show-cards" checked={showInfoCards} onCheckedChange={toggleInfoCards} />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
                   <Label>Filtrar por data</Label>
                   <div className="flex gap-1">
-                    <Button variant="outline" size="sm" onClick={setToday} className="h-7 text-xs">
+                    <Button
+                      variant={
+                        selectedDate.toDateString() ===
+                        new Date().toDateString()
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      onClick={setToday}
+                      className={cn(
+                        "h-7 text-xs cursor-pointer",
+                        selectedDate.toDateString() ===
+                          new Date().toDateString()
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-blue-50 border-blue-200"
+                      )}
+                    >
                       Hoje
                     </Button>
-                    <Button variant="outline" size="sm" onClick={setYesterday} className="h-7 text-xs">
+                    <Button
+                      variant={
+                        selectedDate.toDateString() ===
+                        subDays(new Date(), 1).toDateString()
+                          ? "default"
+                          : "outline"
+                      }
+                      size="sm"
+                      onClick={setYesterday}
+                      className={cn(
+                        "h-7 text-xs cursor-pointer",
+                        selectedDate.toDateString() ===
+                          subDays(new Date(), 1).toDateString()
+                          ? "bg-blue-600 text-white"
+                          : "hover:bg-blue-50 border-blue-200"
+                      )}
+                    >
                       Ontem
                     </Button>
                   </div>
@@ -789,37 +954,44 @@ export default function SupervisorMap() {
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {format(selectedDate, "PPP", { locale: ptBR })}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={selectedDate} onSelect={handleDateChange} initialFocus />
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateChange}
+                      initialFocus
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
 
               <Card>
-                <CardHeader className="py-2">
-                  <CardTitle className="text-sm font-medium">Estatísticas</CardTitle>
+                <CardHeader className="py-2 flex justify-between">
+                  <CardTitle className="text-sm font-medium">
+                    Estatísticas
+                  </CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total {filteredUsers.length}
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="py-2">
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total:</span>
-                      <Badge variant="outline">{filteredUsers.length}</Badge>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Online:</span>
-                      <Badge variant="success" className="bg-green-500">
-                        {onlineUsersCount}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Offline:</span>
-                      <Badge variant="destructive">{offlineUsersCount}</Badge>
-                    </div>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Online:</span>
+                    <Badge variant="default" className="bg-green-500">
+                      {onlineUsersCount}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Offline:</span>
+                    <Badge variant="destructive">{offlineUsersCount}</Badge>
                   </div>
                 </CardContent>
               </Card>
@@ -827,6 +999,6 @@ export default function SupervisorMap() {
           </TabsContent>
         </Tabs>
       </div>
-    )
+    );
   }
 }

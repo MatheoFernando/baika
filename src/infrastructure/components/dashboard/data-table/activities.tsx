@@ -173,7 +173,7 @@ export function ActivityTable() {
   ];
   
   return (
-    <div className="container mx-auto py-10">
+    <div className="">
       <DataTable
         columns={columns}
         data={notifications}

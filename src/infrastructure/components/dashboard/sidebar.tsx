@@ -6,13 +6,12 @@ import {
   Home, 
   Users, 
   BarChart2, 
-  Map, 
+  MapPin, 
   MessageSquare, 
   FileText,
   Menu,
   AlignLeft,
   Building2,
-  LogOut,
   ChartNoAxesCombined,
   ClipboardMinus
 } from "lucide-react";
@@ -84,16 +83,12 @@ export function Sidebar({ className }: SidebarProps) {
   ];
 
   const secondaryMenuItems: MenuItem[] = [
-    { icon: Map, label: "Maps", href: "/dashboard/maps" },
+    { icon: MapPin, label: "Maps", href: "/dashboard/maps" },
     { icon: MessageSquare, label: "Chat", href: "/dashboard/chat" },
     { icon: ChartNoAxesCombined, label: "Analytics", href: "/dashboard/analytics" },
     { icon: FileText, label: "Relatório da Supervisão", href: "/dashboard/relatorio" },
   ];
 
-  const handleLogout = () => {
-    // Implementar a lógica de logout aqui
-    console.log("Logout clicked");
-  };
 
   const renderMenuItem = (item: MenuItem, index: number) => (
     <div key={index}>
@@ -146,24 +141,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </nav>
       
-      {/* Footer para Mobile */}
-      <div className={cn(
-        "mt-auto border-t py-4 px-4", 
-        isDarkMode ? "border-gray-700" : "border-gray-200"
-      )}>
-        <button 
-          onClick={handleLogout}
-          className={cn(
-            "flex items-center w-full px-4 py-3 text-sm rounded-lg transition-colors",
-            isDarkMode 
-              ? "text-red-300 hover:bg-gray-800" 
-              : "text-red-600 hover:bg-gray-100"
-          )}
-        >
-          <LogOut size={20} className="mr-3" />
-          <span>Sair do Sistema</span>
-        </button>
-      </div>
+    
     </div>
   );
 
@@ -197,7 +175,7 @@ export function Sidebar({ className }: SidebarProps) {
               className
             )}
           >
-            <Link href="/" className="flex items-center p-4">
+            <Link href="/" className="flex items-center justify-center p-4">
               {collapsed ? (
                 <Image src="/logo.png" alt="Logo" width={80} height={80} className="" />
               ) : (
@@ -233,27 +211,6 @@ export function Sidebar({ className }: SidebarProps) {
               </nav>
             </div>
 
-            <div className={cn(
-              "mt-auto border-t py-4",
-              isDarkMode ? "border-gray-700" : "border-gray-200"
-            )}>
-              <button 
-                onClick={handleLogout}
-                className={cn(
-                  "flex items-center w-full px-4 py-3 text-sm rounded-lg transition-colors",
-                  collapsed ? "justify-center" : "",
-                  isDarkMode 
-                    ? "text-red-300 hover:bg-gray-800" 
-                    : "text-red-600 hover:bg-gray-100"
-                )}
-              >
-                <LogOut 
-                  size={collapsed ? 28 : 20} 
-                  className={collapsed ? "" : "mr-3"} 
-                />
-                {!collapsed && <span>Sair do Sistema</span>}
-              </button>
-            </div>
           </div>
 
           <button

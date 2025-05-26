@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 import {
   Menu,
   Phone,
@@ -14,6 +12,8 @@ import {
   Search,
   Settings,
   UserPlus,
+  Wifi,
+  WifiOff,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar"
 import { Button } from "@/src/infrastructure/ui/button"
@@ -22,151 +22,177 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/infrastructure/u
 import { ScrollArea } from "@/src/infrastructure/ui/scroll-area"
 import { Sheet, SheetContent } from "@/src/infrastructure/ui/sheet"
 import UserStatus from "./user-status"
-import ContactList from "./contact-list"
 import { useMediaQuery } from "@/src/hooks/use-media-query"
 import ChatMessage from "./chat-message"
 import { Textarea } from "@/src/infrastructure/ui/textarea"
+import { Badge } from "@/src/infrastructure/ui/badge"
+import SupervisorList from "./contact-list"
+import { useChat } from "@/src/hooks/use-chat"
+import { socketManager } from "@/src/lib/socket"
+import { CurrentUser, Supervisor } from "@/src/types/chat"
 
-// Atualizar interface Message para incluir status
-interface Message {
-  id: number
-  sender: string
-  content: string
-  timestamp: string
-  isUser: boolean
-  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
-  isEmpty?: boolean
+interface ChatInterfaceProps {
+  currentUser: CurrentUser
 }
 
-const mockMessages: Message[] = [
-  { id: 1, sender: "John Doe", content: "oi", timestamp: "10:30 AM", isUser: false },
-  { id: 2, sender: "You", content: "oi", timestamp: "10:32 AM", isUser: true, status: 'read' },
-  {
-    id: 3,
-    sender: "John Doe",
-    content: "Como você está?",
-    timestamp: "10:35 AM",
-    isUser: false,
-  },
-  {
-    id: 4,
-    sender: "You",
-    content: "Estou bem, e você?",
-    timestamp: "10:38 AM",
-    isUser: true,
-    status: 'delivered',
-  },
-]
-
-export default function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   const [newMessage, setNewMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const [activeChat, setActiveChat] = useState("John Doe")
+  const [activeChat, setActiveChat] = useState("")
+  const [activeSupervisor, setActiveSupervisor] = useState<Supervisor | null>(null)
   const [showEmptyWarning, setShowEmptyWarning] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const isDesktop = useMediaQuery("(min-width: 868px)")
-  const isMobile = useMediaQuery("(max-width: 640px)")
+  const [searchQuery, setSearchQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Media queries
+  const [isDesktop, setIsDesktop] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 868)
+      setIsMobile(window.innerWidth <= 640)
+    }
+
+    checkScreenSize()
+    window.addEventListener("resize", checkScreenSize)
+    return () => window.removeEventListener("resize", checkScreenSize)
+  }, [])
+
+  const {
+    supervisors,
+    messages,
+    isLoading,
+    isConnected,
+    typingUsers,
+    fetchMessages,
+    sendMessage,
+    deleteMessage,
+    updateMessage,
+  } = useChat({ currentUser })
+
+  // Filter supervisors based on search
+  const filteredSupervisors = React.useMemo(
+    () =>
+      supervisors.filter(
+        (supervisor) =>
+          supervisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          supervisor.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    [supervisors, searchQuery],
+  )
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [messages.length])
+
+  // Handle typing indicators
   useEffect(() => {
     if (newMessage.length > 0) {
-      setIsTyping(true)
       setShowEmptyWarning(false)
-    } else {
-      setIsTyping(false)
-    }
-  }, [newMessage])
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Verificar se a mensagem está vazia
-    if (newMessage.trim() === "") {
-      setShowEmptyWarning(true)
-      // Adicionar mensagem vazia temporária para mostrar o aviso
-      const emptyMsg: Message = {
-        id: Date.now(),
-        sender: "System",
-        content: "",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isUser: false,
-        isEmpty: true,
+      if (activeChat) {
+        socketManager.emitTyping(`${currentUser.employeeId}-${activeChat}`, currentUser.employeeId)
+
+        if (typingTimeoutRef.current) {
+          clearTimeout(typingTimeoutRef.current)
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+          socketManager.emitStoppedTyping(`${currentUser.employeeId}-${activeChat}`, currentUser.employeeId)
+        }, 1000)
       }
-      setMessages(prev => [...prev, emptyMsg])
-      
-      // Remover o aviso após 3 segundos
-      setTimeout(() => {
-        setMessages(prev => prev.filter(msg => msg.id !== emptyMsg.id))
-        setShowEmptyWarning(false)
-      }, 3000)
-      return
     }
 
-    const newMsg: Message = {
-      id: Date.now(),
-      sender: "voce",
-      content: newMessage,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      isUser: true,
-      status: 'sending',
-    }
-
-    setMessages(prev => [...prev, newMsg])
-    setNewMessage("")
-
-    // Simular progresso do status da mensagem
-    setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMsg.id ? { ...msg, status: 'sent' as const } : msg
-        )
-      )
-    }, 500)
-
-    setTimeout(() => {
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMsg.id ? { ...msg, status: 'delivered' as const } : msg
-        )
-      )
-    }, 1000)
-
-    // Simular resposta automática
-    setTimeout(() => {
-      const response: Message = {
-        id: Date.now() + 1,
-        sender: "John Doe",
-        content: "Obrigado pela sua mensagem! Vou responder em breve.",
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        isUser: false,
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
       }
-      setMessages(prev => [...prev, response])
-      
-      // Marcar como lido após receber resposta
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === newMsg.id ? { ...msg, status: 'read' as const } : msg
-        )
-      )
-    }, 2000)
-  }
+    }
+  }, [newMessage, activeChat, currentUser.mecCoordinator])
+
+  const handleSetActiveChat = useCallback(
+    (employeeId: string, supervisor: Supervisor) => {
+      setActiveChat(employeeId)
+      setActiveSupervisor(supervisor)
+      fetchMessages(employeeId)
+
+      socketManager.joinChatRoom(`${currentUser.mecCoordinator}-${employeeId}`)
+
+      if (!isDesktop) {
+        setSidebarOpen(false)
+      }
+    },
+    [fetchMessages, currentUser.mecCoordinator, isDesktop],
+  )
+
+  const handleSendMessage = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+
+      if (newMessage.trim() === "") {
+        setShowEmptyWarning(true)
+        setTimeout(() => setShowEmptyWarning(false), 3000)
+        return
+      }
+
+      if (!activeChat) {
+        return
+      }
+
+      await sendMessage(newMessage, activeChat)
+      setNewMessage("")
+
+      socketManager.emitStoppedTyping(`${currentUser.employeeId}-${activeChat}`, currentUser.employeeId)
+    },
+    [newMessage, activeChat, sendMessage, currentUser.employeeId],
+  )
+
+  const handleDeleteMessage = useCallback(
+    async (messageId: string) => {
+      if (confirm("Tem certeza que deseja deletar esta mensagem?")) {
+        await deleteMessage(messageId)
+      }
+    },
+    [deleteMessage],
+  )
+
+  const handleEditMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      await updateMessage(messageId, newContent)
+    },
+    [updateMessage],
+  )
 
   const renderSidebar = () => (
-    <div className="w-full h-full flex flex-col ">
-      <div className="p-3 sm:p-4 flex items-center justify-between border-b shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
-            <AvatarFallback className="text-xs">Eu</AvatarFallback>
+    <div className="w-full h-full flex flex-col bg-white">
+      {/* User Header */}
+      <div className="p-4 flex items-center justify-between border-b shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Avatar className="h-10 w-10 shrink-0">
+            <AvatarImage src={currentUser.avatar || "/placeholder.svg?height=40&width=40"} alt="User" />
+            <AvatarFallback className="text-sm font-medium">
+              {currentUser.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <h3 className="font-medium text-sm truncate">Meu Nome</h3>
-            <UserStatus status="online" />
+            <h3 className="font-medium text-sm truncate">{currentUser.name}</h3>
+            <div className="flex items-center gap-2">
+              <UserStatus status="online" />
+              {isConnected ? <Wifi className="h-3 w-3 text-green-500" /> : <WifiOff className="h-3 w-3 text-red-500" />}
+            </div>
           </div>
         </div>
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
@@ -174,58 +200,50 @@ export default function ChatInterface() {
         </Button>
       </div>
 
-      <div className="p-3 sm:p-4 shrink-0">
+      {/* Search */}
+      <div className="p-4 shrink-0">
         <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Pesquisar conversa..." className="pl-8 h-9" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Pesquisar supervisores..."
+            className="pl-10 h-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      <Tabs defaultValue="chats" className="flex flex-col min-h-0 p-4 mt-2">
-        <TabsList className="grid grid-cols-3 w-full ">
-          <TabsTrigger value="chats" className="text-xs sm:text-sm">Conversa</TabsTrigger>
-          <TabsTrigger value="groups" className="text-xs sm:text-sm">Grupo</TabsTrigger>
-          <TabsTrigger value="contacts" className="text-xs sm:text-sm">Contatos</TabsTrigger>
+      {/* Tabs */}
+      <Tabs defaultValue="supervisors" className="flex flex-col min-h-0 px-4">
+        <TabsList className="grid grid-cols-2 w-full">
+          <TabsTrigger value="supervisors" className="text-sm">
+            Supervisores
+          </TabsTrigger>
+          <TabsTrigger value="groups" className="text-sm">
+            Grupos
+          </TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="chats" className="flex-1 min-h-0 mt-2">
+
+        <TabsContent value="supervisors" className="flex-1 min-h-0 mt-4">
           <ScrollArea className="h-full">
-            <ContactList
+            <SupervisorList
+              supervisors={filteredSupervisors}
               activeChat={activeChat}
-              setActiveChat={(name) => {
-                setActiveChat(name)
-                if (!isDesktop) {
-                  setSidebarOpen(false)
-                }
-              }}
+              setActiveChat={handleSetActiveChat}
+              isLoading={isLoading}
             />
           </ScrollArea>
         </TabsContent>
-        
-        <TabsContent value="groups" className="flex-1 min-h-0 mt-2">
+
+        <TabsContent value="groups" className="flex-1 min-h-0 mt-4">
           <ScrollArea className="h-full">
-            <div className="p-4">
-              <p className="text-center text-muted-foreground text-sm">Sem grupos criados</p>
-              <Button className="w-full mt-4" variant="outline" size="sm">
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm mb-4">Funcionalidade em desenvolvimento</p>
+              <Button variant="outline" size="sm" disabled className="w-full">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Criar Grupo
               </Button>
             </div>
-          </ScrollArea>
-        </TabsContent>
-        
-        <TabsContent value="contacts" className="flex-1 min-h-0 mt-2">
-          <ScrollArea className="h-full">
-            <ContactList
-              activeChat={activeChat}
-              setActiveChat={(name) => {
-                setActiveChat(name)
-                if (!isDesktop) {
-                  setSidebarOpen(false)
-                }
-              }}
-              showLastMessage={false}
-            />
           </ScrollArea>
         </TabsContent>
       </Tabs>
@@ -233,131 +251,153 @@ export default function ChatInterface() {
   )
 
   return (
-    <div className="flex bg-background overflow-hidden">
+    <div className="flex bg-background overflow-hidden h-full">
+      {/* Desktop Sidebar */}
       {isDesktop ? (
-        <div className=" border-r h-full shrink-0">{renderSidebar()}</div>
+        <div className="w-80 border-r h-full shrink-0">{renderSidebar()}</div>
       ) : (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[480px] pt-8">
+          <SheetContent side="left" className="p-0 w-[400px] max-w-[90vw]">
             {renderSidebar()}
           </SheetContent>
         </Sheet>
       )}
 
+      {/* Main Chat Area */}
       <div className="flex-1 flex flex-col h-full min-w-0">
-        <div className="border-b p-3 sm:p-4 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            {!isDesktop && (
-              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="shrink-0 h-8 w-8">
-                <Menu className="h-4 w-4" />
-              </Button>
-            )}
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
-                <AvatarImage src="/placeholder.svg?height=40&width=40" alt={activeChat} />
-                <AvatarFallback className="text-xs">{activeChat[0]}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-medium text-sm sm:text-base truncate">{activeChat}</h3>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <span className="relative flex h-2 w-2 mr-1 shrink-0">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
-                  <span className="truncate">Online</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Phone className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Video className="h-4 w-4" />
-            </Button>
-            {!isMobile && (
-              <>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Search className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="flex-1 min-h-0 relative">
-          <ScrollArea className="h-full">
-            <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-              {isTyping && !messages[messages.length - 1].isUser && (
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <Avatar className="h-6 w-6 sm:h-8 sm:w-8 shrink-0">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt={activeChat} />
-                    <AvatarFallback className="text-xs">{activeChat[0]}</AvatarFallback>
+        {activeSupervisor ? (
+          <>
+            {/* Chat Header */}
+            <div className="border-b p-4 flex items-center justify-between shrink-0 bg-white">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                {!isDesktop && (
+                  <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="shrink-0 h-8 w-8">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                )}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage
+                      src={activeSupervisor.avatar || "/placeholder.svg?height=40&width=40"}
+                      alt={activeSupervisor.name}
+                    />
+                    <AvatarFallback className="text-sm font-medium">
+                      {activeSupervisor.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
+                    </AvatarFallback>
                   </Avatar>
-                  <div className="bg-secondary p-2 sm:p-3 rounded-lg">
-                    <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"></div>
-                      <div
-                        className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"
-                        style={{ animationDelay: "0.2s" }}
-                      ></div>
-                      <div
-                        className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"
-                        style={{ animationDelay: "0.4s" }}
-                      ></div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-base truncate">{activeSupervisor.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <UserStatus status={activeSupervisor.status} />
+                      {typingUsers.has(activeSupervisor.employeeId) && (
+                        <span className="text-sm text-blue-600 animate-pulse">digitando...</span>
+                      )}
                     </div>
                   </div>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Phone className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Video className="h-4 w-4" />
+                </Button>
+                {!isMobile && (
+                  <>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <Search className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          </ScrollArea>
-        </div>
 
-        <div className="border-t p-3 sm:p-4 shrink-0">
-          <form onSubmit={handleSendMessage} className="flex items-end gap-2">
-            <Button type="button" variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-              <PaperclipIcon className="h-4 w-4" />
-            </Button>
-            <div className="flex-1 relative min-w-0">
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Mensagem..."
-                className={`min-h-[36px] max-h-24 resize-none pr-10 text-sm ${showEmptyWarning ? 'border-red-300 focus:border-red-500' : ''}`}
-                rows={1}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage(e)
-                  }
-                }}
-              />
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-1 bottom-1 h-6 w-6 sm:h-8 sm:w-8"
-              >
-                <Smile className="h-4 w-4" />
-              </Button>
+            {/* Messages Area */}
+            <div className="flex-1 min-h-0 relative bg-gray-50">
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-4">
+                  {messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                      onDelete={handleDeleteMessage}
+                      onEdit={handleEditMessage}
+                    />
+                  ))}
+                  {showEmptyWarning && (
+                    <div className="flex justify-center my-4">
+                      <div className="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2">
+                        <span className="text-sm text-yellow-800">Mensagem vazia não pode ser enviada</span>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
             </div>
-            <Button 
-              type="submit" 
-              size="icon" 
-              className="bg-blue-600 hover:bg-blue-700 shrink-0 h-8 w-8 sm:h-9 sm:w-9" 
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
-        </div>
+
+            {/* Message Input */}
+            <div className="border-t p-4 shrink-0 bg-white">
+              <form onSubmit={handleSendMessage} className="flex items-end gap-3">
+                <Button type="button" variant="ghost" size="icon" className="shrink-0 h-10 w-10">
+                  <PaperclipIcon className="h-5 w-5" />
+                </Button>
+                <div className="flex-1 relative min-w-0">
+                  <Textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    className={`min-h-[44px] max-h-32 resize-none pr-12 ${showEmptyWarning ? "border-red-300 focus:border-red-500" : ""}`}
+                    rows={1}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault()
+                        handleSendMessage(e)
+                      }
+                    }}
+                  />
+                  <Button type="button" variant="ghost" size="icon" className="absolute right-2 bottom-2 h-8 w-8">
+                    <Smile className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="bg-blue-600 hover:bg-blue-700 shrink-0 h-10 w-10"
+                  disabled={!isConnected}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+             
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center bg-gray-50">
+            <div className="text-center max-w-md mx-auto p-6">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Menu className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Selecione um supervisor</h3>
+              <p className="text-gray-600">Escolha um supervisor da lista para iniciar uma conversa</p>
+              {!isDesktop && (
+                <Button onClick={() => setSidebarOpen(true)} className="mt-4" variant="outline">
+                  <Menu className="mr-2 h-4 w-4" />
+                  Ver Supervisores
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

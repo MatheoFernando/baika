@@ -1,21 +1,37 @@
 export interface Message {
-  id: number
-  sender: string
+  id: string
+  senderId: string
+  receiverId: string
   content: string
   timestamp: string
+  status: "sending" | "sent" | "delivered" | "read" | "failed"
   isUser: boolean
-  status?: "sending" | "sent" | "delivered" | "read" | "failed"
   isEmpty?: boolean
 }
 
-export interface User {
+export interface Supervisor {
   id: string
+  employeeId: string
+  mecCoordinator: string
   name: string
-  employeeId?: string
-  mecCoordinator?: string
+  email: string
   avatar?: string
   status: "online" | "offline" | "away" | "busy"
   lastMessage?: string
-  time?: string
-  unread?: number
+  lastMessageTime?: string
+  unreadCount?: number
+}
+
+export interface ChatRoom {
+  id: string
+  participants: string[]
+  lastActivity: string
+}
+
+export interface CurrentUser {
+  id: string
+  mecCoordinator: string
+  employeeId: string
+  name: string
+  avatar?: string
 }

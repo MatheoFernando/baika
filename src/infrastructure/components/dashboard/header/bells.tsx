@@ -25,7 +25,7 @@ export function Bells() {
         const user = getUser();
         if (!user) return;
 
-        const response = await instance.get(`/notification/${user}?size=5000`);
+        const response = await instance.get(`/notification/${user}?size=50`);
 
         if (response.status !== 200) {
           throw new Error(response.statusText || "Erro ao buscar notificações");

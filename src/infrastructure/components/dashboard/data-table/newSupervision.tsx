@@ -68,9 +68,8 @@ export function NewSupervionTable() {
   const fetchNotifications = React.useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await instance.get(`/supervision?size=5000`)
+      const response = await instance.get(`/supervision?size=100`)
       
-      // Formatação dos dados recebidos
       const formattedNotifications = response.data.data.data.map((notification: any) => {
         const createdAtDate = new Date(notification.createdAt)
         return {
@@ -95,7 +94,7 @@ export function NewSupervionTable() {
   // Função para buscar métricas
   const fetchMetrics = React.useCallback(async () => {
     try {
-      const response = await instance.get(`/admin/metrics?size=950&page=1`)
+      const response = await instance.get(`/admin/metrics?size=100&page=1`)
       setMetricsData(response.data.data.sites)
     } catch (error: any) {
       console.error("Error fetching metrics:", error.message)
@@ -103,7 +102,6 @@ export function NewSupervionTable() {
     }
   }, [])
 
-  // Função para atualizar notificações com informações de métricas
   const updateNotificationsWithMetrics = React.useCallback((notifs: Notification[], metrics: any[]) => {
     return notifs.map((notification) => {
       const metricSite = metrics.find((site) => site.siteCostcenter === notification.costCenter)
@@ -251,22 +249,7 @@ export function NewSupervionTable() {
           )
         },
       },
-      {
-        accessorKey: "duration",
-        header: "Duração",
-      },
-      {
-        accessorKey: "workerInformation",
-        header: "Trabalhadores encontrados",
-        cell: ({ row }: { row: Row<Notification> }) => {
-          const workerInfo = row.getValue("workerInformation") as WorkerInfo[] | undefined
-          return (
-            <div>
-              {workerInfo ? workerInfo.length : 0}
-            </div>
-          )
-        },
-      },
+     
       {
         id: "actions",
         header: "Ações",

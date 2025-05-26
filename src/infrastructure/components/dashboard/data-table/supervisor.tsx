@@ -4,7 +4,6 @@ import * as React from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown,  Edit, Trash, Eye } from "lucide-react"
 import { Button } from "@/src/infrastructure/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/infrastructure/ui/avatar"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -135,20 +134,7 @@ export function SupervisorTable() {
       const user = row.original
       return (
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            {!user.avatar && user.name ? (
-              <AvatarFallback className="flex items-center justify-center bg-gray-400 text-white rounded-full font-semibold">
-                {user.name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}
-                {user.name.split(" ").length > 1 &&
-                  user.name.split(" ").slice(-1).join("")[0]?.toUpperCase()}
-              </AvatarFallback>
-            ) : (
-              <AvatarFallback>
-                {user.name?.[0]?.toUpperCase() ?? "?"}
-              </AvatarFallback>
-            )}
-          </Avatar>
+         
           <div className="font-medium">{user.name}</div>
         </div>
       )

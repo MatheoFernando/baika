@@ -13,8 +13,8 @@ import { Badge } from "@/src/infrastructure/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/infrastructure/ui/tabs"
 import { Skeleton } from "@/src/infrastructure/ui/skeleton"
 import instance from "@/src/lib/api"
-import { toast } from "sonner"
 import { BreadcrumbRoutas } from "@/src/infrastructure/components/ulils/breadcrumbRoutas"
+import toast from "react-hot-toast"
 
 // Tipos
 type Notification = {

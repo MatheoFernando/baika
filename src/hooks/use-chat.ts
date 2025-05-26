@@ -1,235 +1,258 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import axios from "axios"
-import { io, Socket } from "socket.io-client"
-import Pusher from "pusher-js"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { toast } from "sonner"
 import instance from "../lib/api"
-import { getUser } from "../core/auth/authApi"
+import { CurrentUser, Message, Supervisor } from "../types/chat"
+import { socketManager } from "../lib/socket"
 
-export interface Message {
-  id: number
-  sender: string
-  content: string
-  timestamp: string
-  isUser: boolean
-  status?: 'sending' | 'sent' | 'delivered' | 'read' | 'failed'
-  isEmpty?: boolean
-  createdAt?: string
-  employeeId?: string
+interface UseChatProps {
+  currentUser: CurrentUser
 }
 
-export interface User {
-  employeeId: string
-  name: string
-  avatar?: string
-  status?: 'online' | 'offline' | 'away' | 'busy'
-  lastMessage?: string
-  time?: string
-  unread?: number
-  mecCoordinator?: string
-}
+export function useChat({ currentUser }: UseChatProps) {
+  const [supervisors, setSupervisors] = useState<Supervisor[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
 
-interface UseChatReturn {
-  userList: User[]
-  selectedUser: User | null
-  setSelectedUser: (user: User | null) => void
-  conversations: Message[]
-  message: string
-  setMessage: (message: string) => void
-  sendMessage: () => Promise<void>
-  formatMessageTime: (timestamp: string) => string
-  messagesEndRef: React.RefObject<HTMLDivElement>
-}
+  const currentUserRef = useRef(currentUser.employeeId)
+  const socketInitialized = useRef(false)
 
-export function useChat(): UseChatReturn {
-  const [socket, setSocket] = useState<Socket | null>(null)
-  const [userList, setUserList] = useState<User[]>([])
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [conversations, setConversations] = useState<Message[]>([])
-  const [message, setMessage] = useState("")
-  const [novaMensagem, setNovaMensagem] = useState(false)
-  const [userSender, setUserSender] = useState<string | null>(null)
-  const [userReceiver, setUserReceiver] = useState<string | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  const socketUrl ='https://provision-07c1.onrender.com'
  
-  useEffect(() => {
-    fetchChat()
-    
-    if (!socketUrl) {
-      console.error("Socket URL not defined")
-      return
-    }
-    
-    const newSocket = io(socketUrl)
 
-    newSocket.on("connect", () => {
-      console.log("Conectado ao servidor Socket.io")
-    })
-
-    newSocket.on("sendMessage", (newMessage) => {
-      setConversations((prevConversations) => [
-        ...prevConversations,
-        newMessage,
-      ])
-    })
-
-    setSocket(newSocket)
-
-    return () => {
-      newSocket.disconnect()
-    }
-  }, [])
-
-  // Pusher subscription
-  useEffect(() => {
-    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY
-    const pusherCluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-    
-    if (!pusherKey || !pusherCluster) {
-      console.error("Pusher configuration missing")
-      return
-    }
-    
-    const pusher = new Pusher(pusherKey, {
-      cluster: pusherCluster,
-  
-    })
-
-    const channel = pusher.subscribe("my-channel")
-
-    channel.bind("newMessage", (data) => {
-      setNovaMensagem(true)
-    })
-
-    return () => {
-      pusher.unsubscribe("my-channel")
-    }
-  }, [])
-
-  // Toast notification for new messages
-  useEffect(() => {
-    if (novaMensagem) {
-      toast.info("Nova mensagem recebida!")
-      setNovaMensagem(false)
-    }
-  }, [novaMensagem])
-
-  // Fetch messages when user is selected
-  useEffect(() => {
-    if (selectedUser) {
-      fetchMessages()
-      const interval = setInterval(() => {
-        fetchMessages()
-      }, 5000)
-
-      return () => clearInterval(interval)
-    }
-  }, [selectedUser])
-
-  // Auto-scroll to bottom when messages change
-  useEffect(() => {
-    scrollToBottom()
-  }, [conversations])
-
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
-  // Fetch available chat users
-  const fetchChat = async () => {
-    if (!instance) {
-      console.error("API URL not defined")
-      return
-    }
-    
+  const fetchSupervisors = useCallback(async () => {
     try {
-      const response = await instance.get(`/user/?size=50`)
-      const mec = localStorage.getItem("userId")
-      const filterUser = response.data.data.data.filter(
-        (user: User) => user.mecCoordinator === mec
-      )
-      setUserList(filterUser)
+      setIsLoading(true)
+      const response = await instance.get("/user?size=100")
+
+      if (response.data && Array.isArray(response.data.data.data)) {
+        const supervisorData = response.data.data.data
+          .filter((user: any) => user.mecCoordinator !== currentUser.mecCoordinator) // Exclude current user
+          .map((user: any) => ({
+            id: user.id,
+            employeeId: user.employeeId,
+            mecCoordinator: user.mecCoordinator,
+            name: user.name || `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            avatar: user.avatar,
+            status: user.isOnline ? "online" : "offline",
+            lastMessage: "",
+            lastMessageTime: "",
+            unreadCount: 0,
+          }))
+        setSupervisors(supervisorData)
+      }
     } catch (error) {
-      console.error("Error fetching chat users:", error)
+      console.error("Error fetching supervisors:", error)
+      toast.error("Erro ao carregar supervisores")
+    } finally {
+      setIsLoading(false)
     }
-  }
+  }, [currentUser.mecCoordinator])
 
-  // Fetch messages for selected user
-  const fetchMessages = async () => {
-    if (!selectedUser || !instance) return
-
-    const mecCoordinator = getUser()
-    console.log("mecCoordinator", mecCoordinator)
-    const fetchUrl = `/chat/${mecCoordinator}/${selectedUser.employeeId}?size=500`
-    const fetchUrlUser = `/chat/${selectedUser.employeeId}/${mecCoordinator}?size=500`
-
+  const fetchMessages = useCallback(async (selectedSupervisorEmployeeId: string) => {
     try {
-      const response = await axios.get(fetchUrl)
-      const responseUser = await axios.get(fetchUrlUser)
-      const join = [...response.data.data.data, ...responseUser.data.data.data]
+      setIsLoading(true)
+      console.log("Fetching messages for:", {
+        currentUserMecCoordinator: currentUserRef.current,
+        selectedSupervisorEmployeeId: selectedSupervisorEmployeeId,
+      })
 
-      setUserSender(mecCoordinator)
-      setUserReceiver(selectedUser.employeeId)
-      setConversations(
-        join.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      const response = await instance.get(
+        `/chat/${currentUserRef}/${selectedSupervisorEmployeeId}`,
       )
+
+      if (response.data && Array.isArray(response.data.data)) {
+        const chatMessages = response.data.data.map((msg: any) => ({
+          id: msg.id,
+          senderId: msg.senderId,
+          receiverId: msg.receiverId,
+          content: msg.content,
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          status: msg.status || "sent",
+          isUser: msg.senderId === currentUserRef.current,
+        }))
+        setMessages(chatMessages)
+      }
     } catch (error) {
       console.error("Error fetching messages:", error)
+      toast.error("Erro ao carregar mensagens")
+    } finally {
+      setIsLoading(false)
     }
-  }
+  }, [])
 
-  // Send message
-  const sendMessage = async () => {
-    if (!message.trim() || !userSender || !userReceiver || !instance || !socket) return
-    
-    const sendUrl = `/chat/send/${userSender}/${userReceiver}`
-    
+  const sendMessage = useCallback(async (content: string, receiverEmployeeId: string) => {
+    if (!content.trim()) {
+      toast.error("Mensagem não pode estar vazia")
+      return
+    }
+
+    console.log("Sending message:", {
+      from: currentUserRef.current,
+      to: receiverEmployeeId,
+      content: content,
+    })
+
+    const tempMessage: Message = {
+      id: `temp-${Date.now()}`,
+      senderId: currentUserRef.current,
+      receiverId: receiverEmployeeId,
+      content,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      status: "sending",
+      isUser: true,
+    }
+
+    setMessages((prev) => [...prev, tempMessage])
+
     try {
       const response = await instance.post(
-        sendUrl,
-        { message: message },
-     
+        `/chat/send/${currentUserRef.current}/${receiverEmployeeId}`,
+        {
+          content,
+        },
       )
 
-      socket.emit("sendMessage", response.data.data.message)
-      
-      setConversations((prevConversations) => [
-        ...prevConversations,
-        response.data.data,
-      ])
-      setMessage("")
+      if (response.data) {
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === tempMessage.id ? { ...msg, id: response.data.id, status: "sent" } : msg)),
+        )
+
+        socketManager.sendMessage({
+          messageId: response.data.id,
+          senderId: currentUserRef.current,
+          receiverId: receiverEmployeeId,
+          content,
+          timestamp: response.data.createdAt,
+        })
+
+        toast.success("Mensagem enviada")
+      }
     } catch (error) {
       console.error("Error sending message:", error)
+      setMessages((prev) => prev.map((msg) => (msg.id === tempMessage.id ? { ...msg, status: "failed" } : msg)))
+      toast.error("Erro ao enviar mensagem")
     }
-  }
+  }, [])
 
-  // Format message timestamp
-  const formatMessageTime = (timestamp: string) => {
-    const date = new Date(timestamp)
-    const hours = date.getHours()
-    const minutes = date.getMinutes()
+  const deleteMessage = useCallback(async (messageId: string) => {
+    try {
+      await instance.delete(`/chat/delete/${messageId}/${currentUserRef.current}`)
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId))
+      toast.success("Mensagem deletada")
+    } catch (error) {
+      console.error("Error deleting message:", error)
+      toast.error("Erro ao deletar mensagem")
+    }
+  }, [])
 
-    const formattedHours = hours < 10 ? `0${hours}` : hours
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes
+  const updateMessage = useCallback(async (messageId: string, newContent: string) => {
+    try {
+      const response = await instance.put(`/chat/update/${messageId}/${currentUserRef.current}`, {
+        content: newContent,
+      })
 
-    return `${formattedHours}:${formattedMinutes}`
-  }
+      if (response.data) {
+        setMessages((prev) => prev.map((msg) => (msg.id === messageId ? { ...msg, content: newContent } : msg)))
+        toast.success("Mensagem atualizada")
+      }
+    } catch (error) {
+      console.error("Error updating message:", error)
+      toast.error("Erro ao atualizar mensagem")
+    }
+  }, [])
+
+  // Socket connection
+  useEffect(() => {
+    if (socketInitialized.current) return
+
+    const socket = socketManager.connect(currentUser.mecCoordinator)
+    socketInitialized.current = true
+
+    const handleConnect = () => {
+      setIsConnected(true)
+      toast.success("Conectado ao chat")
+    }
+
+    const handleDisconnect = () => {
+      setIsConnected(false)
+      toast.error("Desconectado do chat")
+    }
+
+    const handleMessageReceived = (message: any) => {
+      const newMessage: Message = {
+        id: message.id,
+        senderId: message.senderId,
+        receiverId: message.receiverId,
+        content: message.content,
+        timestamp: new Date(message.timestamp).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        status: "delivered",
+        isUser: message.senderId === currentUserRef.current,
+      }
+      setMessages((prev) => [...prev, newMessage])
+
+      if (!newMessage.isUser) {
+        toast.success(`Nova mensagem de ${message.senderName || "Supervisor"}`)
+      }
+    }
+
+    const handleMessageStatusUpdate = (data: any) => {
+      setMessages((prev) => prev.map((msg) => (msg.id === data.messageId ? { ...msg, status: data.status } : msg)))
+    }
+
+    const handleUserTyping = (data: any) => {
+      if (data.userId !== currentUserRef.current) {
+        setTypingUsers((prev) => new Set([...prev, data.userId]))
+      }
+    }
+
+    const handleUserStoppedTyping = (data: any) => {
+      setTypingUsers((prev) => {
+        const newSet = new Set(prev)
+        newSet.delete(data.userId)
+        return newSet
+      })
+    }
+
+    socket.on("connect", handleConnect)
+    socket.on("disconnect", handleDisconnect)
+    socketManager.onMessageReceived(handleMessageReceived)
+    socketManager.onMessageStatusUpdate(handleMessageStatusUpdate)
+    socketManager.onUserTyping(handleUserTyping)
+    socketManager.onUserStoppedTyping(handleUserStoppedTyping)
+
+    return () => {
+      socket.off("connect", handleConnect)
+      socket.off("disconnect", handleDisconnect)
+      socketManager.disconnect()
+      socketInitialized.current = false
+      setIsConnected(false)
+    }
+  }, [currentUser.mecCoordinator])
+
+  useEffect(() => {
+    fetchSupervisors()
+  }, [fetchSupervisors])
 
   return {
-    userList,
-    selectedUser,
-    setSelectedUser,
-    conversations,
-    message,
-    setMessage,
+    supervisors,
+    messages,
+    isLoading,
+    isConnected,
+    typingUsers,
+    fetchMessages,
     sendMessage,
-    formatMessageTime,
-    messagesEndRef
+    deleteMessage,
+    updateMessage,
+    fetchSupervisors,
   }
 }

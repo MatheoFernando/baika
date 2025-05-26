@@ -102,11 +102,11 @@ export function OccurrenceTable() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [data, setData] = React.useState<Notification[]>([])
   const [dataInitialized, setDataInitialized] = React.useState(false)
-  
+
   const fetchNotifications = React.useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await instance.get(`/occurrence?size=100000`)
+      const response = await instance.get(`/occurrence?size=100`)
       const formattedNotifications = response.data.data.data.map((notification: any) => ({
         ...notification,
         createdAt: format(new Date(notification.createdAt), "dd/MM/yyyy"),
@@ -126,7 +126,7 @@ export function OccurrenceTable() {
 
   const fetchMetrics = React.useCallback(async () => {
     try {
-      const response = await instance.get(`/admin/metrics?size=950&page=1`)
+      const response = await instance.get(`/admin/metrics?size=100&page=1`)
       setMetricsData(response.data.data.sites)
     } catch (error: any) {
       console.error("Error fetching metrics:", error.message)
@@ -159,66 +159,60 @@ export function OccurrenceTable() {
 
   React.useEffect(() => {
     if (notifications.length > 0 && !dataInitialized) {
-       const sorted = [...notifications].sort(
-      (a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime()
-    )
-    setData(sorted)
-    setDataInitialized(true)
-  }
-}, [notifications, dataInitialized])
-
-React.useEffect(() => {
-  if (notifications.length > 0 && metricsData.length > 0) {
-    const updatedNotifications = updateNotificationsWithMetrics(notifications, metricsData)
-    const sorted = [...updatedNotifications].sort(
-      (a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime()
-    )
-    setData(sorted)
-  }
-}, [notifications, metricsData, updateNotificationsWithMetrics, updateNotificationsWithMetrics])
-
-  const handleViewDetails = React.useCallback((notification: Notification) => {
-    try {
-      if (!notification || !notification._id) {
-        toast.error("Dados da ocorrência inválidos")
-        return
-      }
-      
-      const url = `/dashboard/occurrence/detalhes`
-      router.push(url)
-    } catch (error) {
-      console.error("Erro ao navegar para detalhes:", error)
-      toast.error("Erro ao abrir detalhes da ocorrência")
+      const sorted = [...notifications].sort((a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime())
+      setData(sorted)
+      setDataInitialized(true)
     }
-  }, [router])
+  }, [notifications, dataInitialized])
 
- 
+  React.useEffect(() => {
+    if (notifications.length > 0 && metricsData.length > 0) {
+      const updatedNotifications = updateNotificationsWithMetrics(notifications, metricsData)
+      const sorted = [...updatedNotifications].sort((a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime())
+      setData(sorted)
+    }
+  }, [notifications, metricsData, updateNotificationsWithMetrics, updateNotificationsWithMetrics])
+
+  const handleViewDetails = React.useCallback(
+    (notification: Notification) => {
+      try {
+        if (!notification || !notification._id) {
+          toast.error("Dados da ocorrência inválidos")
+          return
+        }
+
+        const url = `/dashboard/occurrence/${notification._id}`
+        router.push(url)
+      } catch (error) {
+        console.error("Erro ao navegar para detalhes:", error)
+        toast.error("Erro ao abrir detalhes da ocorrência")
+      }
+    },
+    [router],
+  )
+
   const columns = React.useMemo(
     () => [
-        {
-  accessorKey: "idNotification",
-  header: ({
-    column,
-  }: {
-    column: Column<Notification, unknown>
-  }) => (
-    <Button variant="ghost" >
-      ID
-    </Button>
-  ),
-  cell: ({ row }: { row: Row<Notification> }) => {
-    return (
-      <div className="max-w-[100px] truncate" title={`#${row.index + 1}`}>
-        {row.index + 1}
-      </div>
-    )
-  },
-},
+      {
+        accessorKey: "idNotification",
+        header: ({
+          column,
+        }: {
+          column: Column<Notification, unknown>
+        }) => <Button variant="ghost">ID</Button>,
+        cell: ({ row }: { row: Row<Notification> }) => {
+          return (
+            <div className="max-w-[100px] truncate" title={`#${row.index + 1}`}>
+              {row.index + 1}
+            </div>
+          )
+        },
+      },
       {
         accessorKey: "createdAt",
         header: ({ column }: { column: Column<Notification, unknown> }) => (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-           Data
+            Data
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -227,7 +221,7 @@ React.useEffect(() => {
         accessorKey: "createdAtTime",
         header: ({ column }: { column: Column<Notification, unknown> }) => (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-         Hora
+            Hora
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         ),
@@ -290,10 +284,10 @@ React.useEffect(() => {
 
           return (
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="cursor-pointer text-gray-600 hover:text-green-900 hover:bg-green-100" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="cursor-pointer text-gray-600 hover:text-green-900 hover:bg-green-100"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -309,10 +303,10 @@ React.useEffect(() => {
                 style={{ textDecoration: "none" }}
               >
                 {({ loading: pdfLoading }: { loading: boolean }) => (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="cursor-pointer text-blue-600 hover:text-blue-900 hover:bg-blue-100" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer text-blue-600 hover:text-blue-900 hover:bg-blue-100"
                     disabled={pdfLoading}
                     onClick={(e) => {
                       e.stopPropagation()
@@ -332,11 +326,9 @@ React.useEffect(() => {
 
   return (
     <div className="container py-10">
-          <div className="flex items-center justify-between mb-4">
-      <div className="text-sm font-semibold text-gray-700">
-        {`Total de ocorrências: ${data.length}`}
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-sm font-semibold text-gray-700">{`Total de ocorrências: ${data.length}`}</div>
       </div>
-    </div>
       <DataTable
         columns={columns}
         data={data}

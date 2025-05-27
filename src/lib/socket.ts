@@ -45,24 +45,40 @@ class SocketManager {
     return this.socket
   }
 
-  // Chat event listeners
+  // ✅ Chat event listeners
   onMessageReceived(callback: (message: any) => void) {
     this.socket?.on("message_received", callback)
+  }
+
+  offMessageReceived(callback: (message: any) => void) {
+    this.socket?.off("message_received", callback)
   }
 
   onMessageStatusUpdate(callback: (data: any) => void) {
     this.socket?.on("message_status_update", callback)
   }
 
+  offMessageStatusUpdate(callback: (data: any) => void) {
+    this.socket?.off("message_status_update", callback)
+  }
+
   onUserTyping(callback: (data: any) => void) {
     this.socket?.on("user_typing", callback)
+  }
+
+  offUserTyping(callback: (data: any) => void) {
+    this.socket?.off("user_typing", callback)
   }
 
   onUserStoppedTyping(callback: (data: any) => void) {
     this.socket?.on("user_stopped_typing", callback)
   }
 
-  // Chat event emitters
+  offUserStoppedTyping(callback: (data: any) => void) {
+    this.socket?.off("user_stopped_typing", callback)
+  }
+
+  // ✅ Chat event emitters
   sendMessage(data: any) {
     this.socket?.emit("send_message", data)
   }

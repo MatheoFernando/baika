@@ -1,12 +1,10 @@
-export interface Message {
+export interface CurrentUser {
   id: string
-  senderId: string
-  receiverId: string
-  content: string
-  timestamp: string
-  status: "sending" | "sent" | "delivered" | "read" | "failed"
-  isUser: boolean
-  isEmpty?: boolean
+  employeeId: string
+  mecCoordinator: string
+  name: string
+  email: string
+  avatar?: string
 }
 
 export interface Supervisor {
@@ -22,16 +20,19 @@ export interface Supervisor {
   unreadCount?: number
 }
 
-export interface ChatRoom {
+export interface Message {
   id: string
-  participants: string[]
-  lastActivity: string
-}
-
-export interface CurrentUser {
-  id: string
-  mecCoordinator: string
-  employeeId: string
-  name: string
-  avatar?: string
+  senderId: string
+  receiverId: string
+  content: string
+  timestamp: string
+  status: "sending" | "sent" | "delivered" | "read" | "failed"
+  isUser: boolean
+  isEmpty?: boolean
+  fileUrl?: string
+  fileName?: string
+  fileType?: string
+  fileSize?: number
+  createdAt?: string
+  updatedAt?: string
 }

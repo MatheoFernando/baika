@@ -22,14 +22,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/infrastructure/u
 import { ScrollArea } from "@/src/infrastructure/ui/scroll-area"
 import { Sheet, SheetContent } from "@/src/infrastructure/ui/sheet"
 import UserStatus from "./user-status"
-import { useMediaQuery } from "@/src/hooks/use-media-query"
 import ChatMessage from "./chat-message"
 import { Textarea } from "@/src/infrastructure/ui/textarea"
-import { Badge } from "@/src/infrastructure/ui/badge"
-import SupervisorList from "./contact-list"
 import { useChat } from "@/src/hooks/use-chat"
 import { socketManager } from "@/src/lib/socket"
 import { CurrentUser, Supervisor } from "@/src/types/chat"
+import FileUploadDialog from "./file-upload-dialog"
+import ContactList from "./contact-list"
+import { toast } from "sonner"
+
+
 
 interface ChatInterfaceProps {
   currentUser: CurrentUser
@@ -42,6 +44,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   const [showEmptyWarning, setShowEmptyWarning] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [showFileDialog, setShowFileDialog] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -62,27 +65,34 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   }, [])
 
   const {
-    supervisors,
+    contacts,
+    availableSupervisors,
     messages,
     isLoading,
     isConnected,
     typingUsers,
+    addContact,
+    removeContact,
     fetchMessages,
     sendMessage,
     deleteMessage,
     updateMessage,
+    setMessages,
   } = useChat({ currentUser })
 
-  // Filter supervisors based on search
-  const filteredSupervisors = React.useMemo(
+  // Filter contacts based on search
+  const filteredContacts = React.useMemo(
     () =>
-      supervisors.filter(
-        (supervisor) =>
-          supervisor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          supervisor.email.toLowerCase().includes(searchQuery.toLowerCase()),
+      contacts.filter(
+        (contact) =>
+          contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          contact.email.toLowerCase().includes(searchQuery.toLowerCase()),
       ),
-    [supervisors, searchQuery],
+    [contacts, searchQuery],
   )
+
+  // Check if send button should be enabled
+  const canSendMessage = newMessage.trim().length > 0 && isConnected && activeChat
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -116,39 +126,53 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
         clearTimeout(typingTimeoutRef.current)
       }
     }
-  }, [newMessage, activeChat, currentUser.mecCoordinator])
+  }, [newMessage, activeChat, currentUser.employeeId])
+
+  const clearMessages = useCallback(() => {
+    setMessages([])
+  }, [setMessages])
 
   const handleSetActiveChat = useCallback(
     (employeeId: string, supervisor: Supervisor) => {
+      console.log("Switching to chat:", { employeeId, supervisor: supervisor.name })
+
+      // Clear current messages immediately for better UX
+      setMessages([])
+
       setActiveChat(employeeId)
       setActiveSupervisor(supervisor)
+
+      // Fetch messages for the new chat
       fetchMessages(employeeId)
 
-      socketManager.joinChatRoom(`${currentUser.mecCoordinator}-${employeeId}`)
+      socketManager.joinChatRoom(`${currentUser.employeeId}-${employeeId}`)
 
       if (!isDesktop) {
         setSidebarOpen(false)
       }
     },
-    [fetchMessages, currentUser.mecCoordinator, isDesktop],
+    [fetchMessages, currentUser.employeeId, isDesktop, setMessages],
   )
 
   const handleSendMessage = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent, file?: File) => {
       e.preventDefault()
 
-      if (newMessage.trim() === "") {
+      if (newMessage.trim() === "" && !file) {
         setShowEmptyWarning(true)
         setTimeout(() => setShowEmptyWarning(false), 3000)
         return
       }
 
       if (!activeChat) {
+        toast.error("Selecione um chat primeiro")
         return
       }
 
-      await sendMessage(newMessage, activeChat)
-      setNewMessage("")
+      const messageContent = newMessage
+      setNewMessage("") // Clear input immediately for better UX
+
+      await sendMessage(messageContent, activeChat, file)
 
       socketManager.emitStoppedTyping(`${currentUser.employeeId}-${activeChat}`, currentUser.employeeId)
     },
@@ -157,9 +181,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
 
   const handleDeleteMessage = useCallback(
     async (messageId: string) => {
-      if (confirm("Tem certeza que deseja deletar esta mensagem?")) {
-        await deleteMessage(messageId)
-      }
+      await deleteMessage(messageId)
     },
     [deleteMessage],
   )
@@ -170,6 +192,19 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
     },
     [updateMessage],
   )
+
+  const handleFileSelect = useCallback(
+    (file: File) => {
+      handleSendMessage(new Event("submit") as any, file)
+    },
+    [handleSendMessage],
+  )
+
+  useEffect(() => {
+    if (!activeChat) {
+      clearMessages()
+    }
+  }, [activeChat, clearMessages])
 
   const renderSidebar = () => (
     <div className="w-full h-full flex flex-col bg-white">
@@ -205,7 +240,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar supervisores..."
+            placeholder="Pesquisar contatos..."
             className="pl-10 h-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -214,22 +249,25 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="supervisors" className="flex flex-col min-h-0 px-4">
+      <Tabs defaultValue="contacts" className="flex flex-col min-h-0 px-4">
         <TabsList className="grid grid-cols-2 w-full">
-          <TabsTrigger value="supervisors" className="text-sm">
-            Supervisores
+          <TabsTrigger value="contacts" className="text-sm">
+            Contatos
           </TabsTrigger>
           <TabsTrigger value="groups" className="text-sm">
             Grupos
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="supervisors" className="flex-1 min-h-0 mt-4">
+        <TabsContent value="contacts" className="flex-1 min-h-0 mt-4">
           <ScrollArea className="h-full">
-            <SupervisorList
-              supervisors={filteredSupervisors}
+            <ContactList
+              contacts={filteredContacts}
+              availableSupervisors={availableSupervisors}
               activeChat={activeChat}
               setActiveChat={handleSetActiveChat}
+              onAddContact={addContact}
+              onRemoveContact={removeContact}
               isLoading={isLoading}
             />
           </ScrollArea>
@@ -348,7 +386,13 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
             {/* Message Input */}
             <div className="border-t p-4 shrink-0 bg-white">
               <form onSubmit={handleSendMessage} className="flex items-end gap-3">
-                <Button type="button" variant="ghost" size="icon" className="shrink-0 h-10 w-10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-10 w-10"
+                  onClick={() => setShowFileDialog(true)}
+                >
                   <PaperclipIcon className="h-5 w-5" />
                 </Button>
                 <div className="flex-1 relative min-w-0">
@@ -372,13 +416,14 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
                 <Button
                   type="submit"
                   size="icon"
-                  className="bg-blue-600 hover:bg-blue-700 shrink-0 h-10 w-10"
-                  disabled={!isConnected}
+                  className={`shrink-0 h-10 w-10 transition-colors ${
+                    canSendMessage ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                  disabled={!canSendMessage}
                 >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
-             
             </div>
           </>
         ) : (
@@ -387,18 +432,20 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Menu className="h-8 w-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Selecione um supervisor</h3>
-              <p className="text-gray-600">Escolha um supervisor da lista para iniciar uma conversa</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Selecione um contato</h3>
+              <p className="text-gray-600">Adicione e escolha um supervisor da lista para iniciar uma conversa</p>
               {!isDesktop && (
                 <Button onClick={() => setSidebarOpen(true)} className="mt-4" variant="outline">
                   <Menu className="mr-2 h-4 w-4" />
-                  Ver Supervisores
+                  Ver Contatos
                 </Button>
               )}
             </div>
           </div>
         )}
       </div>
+
+      <FileUploadDialog open={showFileDialog} onOpenChange={setShowFileDialog} onFileSelect={handleFileSelect} />
     </div>
   )
 }

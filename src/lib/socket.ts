@@ -8,6 +8,10 @@ class SocketManager {
     this.url = process.env.NEXT_PUBLIC_POCKET_URL || "http://localhost:3001"
   }
 
+  isConnected(): boolean {  
+    return this.socket?.connected || false
+  }
+
   connect(userId: string): Socket {
     if (this.socket?.connected) {
       return this.socket

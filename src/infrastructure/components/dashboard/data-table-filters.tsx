@@ -71,7 +71,7 @@ export function DataTableFilters<TData>({
   }, [table, searchTerm]);
 
   return (
-    <div className="flex flex-wrap items-center gap-2 flex-1">
+    <div className="flex  flex-wrap items-center gap-2 ">
       {/* Filtro de nome/busca */}
       {enableNameFilter && (
         <div className="relative w-full md:w-64">

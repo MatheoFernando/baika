@@ -39,13 +39,12 @@ export type Supervisor = {
 
 export function SupervisorTable() {
   const [data, setData] = React.useState<Supervisor[]>([])
-  const [error, setError] = React.useState<string | null>(null)
   const [supervisors, setSupervisors] = React.useState<Supervisor[]>([])
   const [loading, setLoading] = React.useState(true)
   const [editingSupervisor, setEditingSupervisor] = React.useState<Supervisor | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false)
- 
+  const [searchTerm, setSearchTerm] = React.useState(""); // ADICIONE ESTA LINHA
 
  
   React.useEffect(() => {
@@ -79,7 +78,7 @@ export function SupervisorTable() {
         }))
         
         setSupervisors(formattedData)
-        setData(formattedData) // Atualizando também o estado data que é usado na DataTable
+        setData(formattedData) 
       } else {
         toast.error("Formato de resposta inválido")
       }
@@ -95,8 +94,7 @@ export function SupervisorTable() {
     try {
       const { _id, active, ...payload } = editedSupervisor
       await instance.put( `/user/updateMe/${_id}`, payload )
-      
-      // Atualizando ambos os estados
+
       const updatedSupervisors = supervisors.map(sup => 
         sup._id === _id ? { ...sup, ...payload, _id } : sup
       );
@@ -244,8 +242,8 @@ export function SupervisorTable() {
   }
 
   return (
-    <div className="container mx-auto py-10">
-          <BreadcrumbRoutas title="Supervisores"  productName="Inicio" showBackButton />
+    <div>
+      <BreadcrumbRoutas title="Supervisores" productName="Inicio" showBackButton />
       <DataTable
         columns={columns}
         data={data}
@@ -261,6 +259,8 @@ export function SupervisorTable() {
         initialColumnVisibility={{
           email: false,
         }}
+        searchTerm={searchTerm}           
+        setSearchTerm={setSearchTerm}    
       />
           <SupervisorEditForm
         supervisor={editingSupervisor}

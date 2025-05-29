@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import * as React from "react";
+import * as React from "react"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -12,62 +12,49 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../ui/table";
-import { Card, CardContent, CardHeader } from "../../ui/card";
-import { Skeleton } from "../../ui/skeleton";
-import { DataTableFilters } from "./data-table-filters";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { Button } from "../../ui/button";
+} from "@tanstack/react-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table"
+import { Card, CardContent, CardHeader } from "../../ui/card"
+import { Skeleton } from "../../ui/skeleton"
+import { DataTableFilters } from "./data-table-filters"
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { Button } from "../../ui/button"
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  loading?: boolean;
-  title: string;
-  // Filter options
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[]
+  loading?: boolean
+  title: string
   filterOptions: {
-    enableNameFilter?: boolean;
-    enableDateFilter?: boolean;
-    enableSiteFilter?: boolean;
-    enableSupervisorFilter?: boolean;
-    enableColumnVisibility?: boolean;
-    enableViewModeToggle?: boolean;
-    enableAddButton?: boolean;
-    addButtonLabel?: string;
-  };
-  // Callbacks
-  onAddClick?: () => void;
-  // Filter state
-  searchTerm?: string;
-  setSearchTerm?: (value: string) => void;
-  date?: Date;
-  setDate?: (date: Date | undefined) => void;
-  // View mode
-  viewMode?: "table" | "card";
-  setViewMode?: (mode: "table" | "card") => void;
-  // Rendering options
-  hasAvatar?: boolean;
-  avatarAccessor?: keyof TData;
-  nameAccessor?: keyof TData;
-  // Card options
+    enableNameFilter?: boolean
+    enableDateFilter?: boolean
+    enableSiteFilter?: boolean
+    enableSupervisorFilter?: boolean
+    enableColumnVisibility?: boolean
+    enableViewModeToggle?: boolean
+    enableAddButton?: boolean
+    addButtonLabel?: string
+  }
+  onAddClick?: () => void
+  searchTerm?: string
+  setSearchTerm?: (value: string) => void
+  date?: Date
+  setDate?: (date: Date | undefined) => void
+  viewMode?: "table" | "card"
+  setViewMode?: (mode: "table" | "card") => void
+  hasAvatar?: boolean
+  avatarAccessor?: keyof TData
+  nameAccessor?: keyof TData
   cardOptions?: {
-    primaryField: keyof TData;
+    primaryField: keyof TData
     secondaryFields: Array<{
-      key: keyof TData;
-      label: string;
-    }>;
-    onCardClick?: (item: TData) => void;
-  };
-  emptyMessage?: string;
-  initialColumnVisibility?: VisibilityState;
+      key: keyof TData
+      label: string
+    }>
+    onCardClick?: (item: TData) => void
+  }
+  emptyMessage?: string
+  initialColumnVisibility?: VisibilityState
 }
 
 export function DataTable<TData, TValue>({
@@ -90,13 +77,10 @@ export function DataTable<TData, TValue>({
   emptyMessage = "Nenhum registro encontrado.",
   initialColumnVisibility = {},
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>(initialColumnVisibility);
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialColumnVisibility)
+  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable({
     data,
@@ -115,33 +99,31 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
-  });
+  })
 
   React.useEffect(() => {
     if (date && table.getColumn("createdAt")) {
-      table
-        .getColumn("createdAt")
-        ?.setFilterValue(date.toISOString().split("T")[0]);
+      table.getColumn("createdAt")?.setFilterValue(date.toISOString().split("T")[0])
     } else if (table.getColumn("createdAt")) {
-      table.getColumn("createdAt")?.setFilterValue(undefined);
+      table.getColumn("createdAt")?.setFilterValue(undefined)
     }
-  }, [date, table]);
+  }, [date, table])
 
   React.useEffect(() => {
     if (searchTerm && nameAccessor && table.getColumn(nameAccessor as string)) {
-      table.getColumn(nameAccessor as string)?.setFilterValue(searchTerm);
+      table.getColumn(nameAccessor as string)?.setFilterValue(searchTerm)
     }
-  }, [searchTerm, nameAccessor, table]);
+  }, [searchTerm, nameAccessor, table])
 
   const renderSkeletonRows = () => {
     return Array(5)
       .fill(0)
       .map((_, i) => (
-        <TableRow key={`skeleton-${i}`} className="border-gray-100">
+        <TableRow key={`skeleton-${i}`} className="border-b border-gray-100">
           {Array(columns.length)
             .fill(0)
             .map((_, j) => (
-              <TableCell key={`skeleton-cell-${i}-${j}`} className="py-4">
+              <TableCell key={`skeleton-cell-${i}-${j}`} className="py-3 px-4">
                 {j === 0 && hasAvatar ? (
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />
@@ -153,15 +135,15 @@ export function DataTable<TData, TValue>({
               </TableCell>
             ))}
         </TableRow>
-      ));
-  };
+      ))
+  }
 
   const renderCardSkeleton = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {Array(6)
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {Array(8)
         .fill(0)
         .map((_, index) => (
-          <Card key={index} className="border-gray-200 shadow-sm">
+          <Card key={index} className="border border-gray-200 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center space-x-3">
                 <Skeleton className="h-10 w-10 rounded-full" />
@@ -180,41 +162,38 @@ export function DataTable<TData, TValue>({
           </Card>
         ))}
     </div>
-  );
+  )
 
   const renderCardView = () => {
-    if (!cardOptions) return null;
+    if (!cardOptions) return null
+
+    const paginatedData = table.getRowModel().rows.map((row) => row.original)
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {data.map((item, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {paginatedData.map((item, index) => (
           <Card
             key={index}
-            className="border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:border-gray-300"
-            onClick={() =>
-              cardOptions.onCardClick && cardOptions.onCardClick(item)
-            }
+            className="group border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer hover:border-blue-300 hover:-translate-y-1 bg-white"
+            onClick={() => cardOptions.onCardClick && cardOptions.onCardClick(item)}
           >
-            <CardHeader className="pb-3">
-              <div className="flex items-center space-x-3">
-                <div className="font-semibold text-gray-900">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-600 transition-colors">
                   {String(item[cardOptions.primaryField] || "")}
-                </div>
+                </h3>
+                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="pt-0">
+              <div className="space-y-3">
                 {cardOptions.secondaryFields.map((field, idx) => (
                   <div
                     key={idx}
-                    className="text-center bg-gray-50 py-3 px-4 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="text-xl font-bold text-gray-900">
-                      {String(item[field.key] || "0")}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {field.label}
-                    </div>
+                    <span className="text-sm font-medium text-gray-600">{field.label}</span>
+                    <span className="text-sm text-gray-900 font-semibold">{String(item[field.key] || "-")}</span>
                   </div>
                 ))}
               </div>
@@ -222,183 +201,171 @@ export function DataTable<TData, TValue>({
           </Card>
         ))}
       </div>
-    );
-  };
+    )
+  }
 
-  const totalPages = table.getPageCount();
-  const currentPage = table.getState().pagination.pageIndex + 1;
-  const startItem =
-    table.getState().pagination.pageIndex *
-      table.getState().pagination.pageSize +
-    1;
-  const endItem = Math.min(
-    startItem + table.getState().pagination.pageSize - 1,
-    data.length
-  );
+  const totalPages = table.getPageCount()
+  const currentPage = table.getState().pagination.pageIndex + 1
+  const startItem = table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1
+  const endItem = Math.min(startItem + table.getState().pagination.pageSize - 1, data.length)
 
-  return (
-    <Card className="w-full bg-white px-6 py-8 shadow-sm">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <DataTableFilters
-            table={table}
-            filterOptions={filterOptions}
-            onAddClick={onAddClick}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            date={date}
-            setDate={setDate}
-            viewMode={viewMode}
-            setViewMode={setViewMode}
-          />
-        </div>
+  const renderPagination = () => (
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
+      <div className="text-sm text-gray-600">
+        Mostrando {startItem} a {endItem} de {data.length} registros
       </div>
 
-      {viewMode === "table" ? (
-        <div className="">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className="border-gray-200 bg-gray-50/50 w-full"
-                >
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className="py-4 px-6 text-sm font-medium text-gray-600 bg-gray-50/50  w-full"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                renderSkeletonRows()
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row, index) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    className={`border-gray-100 hover:bg-gray-50/50  transition-colors duration-150 ${
-                      index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
-                    }`}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="  text-sm text-gray-900 py-1"
-                      >
-                        {cell.column.id === nameAccessor && hasAvatar ? (
-                          <div className="flex items-center gap-3 
-                          ">
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </div>
-                        ) : (
-                          flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-32 text-center"
-                  >
-                    <div className="flex flex-col items-center justify-center text-gray-500">
-                      <div className="text-lg font-medium mb-2">
-                       Nenhum dado encontrado
-                      </div>
-                      <div className="text-sm">{emptyMessage}</div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+          className="h-8 w-8 p-0 hover:bg-gray-100"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+
+        <div className="flex items-center gap-1">
+          {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+            let pageNumber
+            if (totalPages <= 7) {
+              pageNumber = i + 1
+            } else if (currentPage <= 4) {
+              pageNumber = i + 1
+            } else if (currentPage >= totalPages - 3) {
+              pageNumber = totalPages - 6 + i
+            } else {
+              pageNumber = currentPage - 3 + i
+            }
+
+            if (pageNumber < 1 || pageNumber > totalPages) return null
+
+            return (
+              <Button
+                key={pageNumber}
+                variant={currentPage === pageNumber ? "default" : "outline"}
+                size="sm"
+                onClick={() => table.setPageIndex(pageNumber - 1)}
+                className={`h-8 w-8 p-0 text-xs font-medium transition-all ${
+                  currentPage === pageNumber
+                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100 border-gray-300"
+                }`}
+              >
+                {pageNumber}
+              </Button>
+            )
+          })}
         </div>
-      ) : (
-        <>{loading ? renderCardSkeleton() : renderCardView()}</>
-      )}
 
-      {viewMode === "table" && totalPages > 1 && !loading && (
-        <div className="flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-500">
-            Página {currentPage} de {totalPages}
-          </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+          className="h-8 w-8 p-0 hover:bg-gray-100"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+    </div>
+  )
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-            </button>
-
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                let pageNumber;
-                if (totalPages <= 7) {
-                  pageNumber = i + 1;
-                } else if (currentPage <= 4) {
-                  pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 3) {
-                  pageNumber = totalPages - 6 + i;
-                } else {
-                  pageNumber = currentPage - 3 + i;
-                }
-
-                if (pageNumber < 1 || pageNumber > totalPages) return null;
-
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => table.setPageIndex(pageNumber - 1)}
-                    className={`w-8 h-8 p-0 cursor-pointer rounded-full ${
-                      currentPage === pageNumber
-                        ? "bg-blue-600 hover:bg-blue-600 text-white border-blue-600"
-                        : " text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
+  return (
+    <div className="w-full ">
+      <Card className="border-none shadow-none p-6 md:p-8">
+       
+          <div className="flex flex-col sm:flex-row flex-wrap sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">{title}</h1>
+              <p className="text-sm text-gray-600">Gerencie e visualize seus dados de forma eficiente</p>
             </div>
 
-            <button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="cursor-pointer "
-            >
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </button>
+            <div className="flex items-center gap-3">
+              <DataTableFilters
+                table={table}
+                filterOptions={filterOptions}
+                onAddClick={onAddClick}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                date={date}
+                setDate={setDate}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </Card>
-  );
+      
+
+      
+          {viewMode === "table" ? (
+            <div className=" overflow-hidden bg-white">
+              <Table>
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="border-b border-gray-200 bg-gray-50">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className="py-4 px-4 text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 first:pl-6 last:pr-6"
+                        >
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    renderSkeletonRows()
+                  ) : table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row, index) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                        className={`border-b border-gray-100 hover:bg-blue-50/50 transition-colors duration-200 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                        }`}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="py-3 px-4 text-sm text-gray-900 first:pl-6 last:pr-6">
+                            {cell.column.id === nameAccessor && hasAvatar ? (
+                              <div className="flex items-center gap-3">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </div>
+                            ) : (
+                              flexRender(cell.column.columnDef.cell, cell.getContext())
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={columns.length} className="h-32 text-center">
+                        <div className="flex flex-col items-center justify-center text-gray-500 py-8">
+                          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                            <Plus className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <div className="text-lg font-medium mb-2 text-gray-700">Nenhum dado encontrado</div>
+                          <div className="text-sm text-gray-500">{emptyMessage}</div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <>{loading ? renderCardSkeleton() : renderCardView()}</>
+          )}
+
+          {totalPages > 1 && !loading && renderPagination()}
+      
+      </Card>
+    </div>
+  )
 }

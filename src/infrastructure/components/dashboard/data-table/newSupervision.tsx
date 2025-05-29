@@ -117,7 +117,6 @@ export function NewSupervionTable() {
     })
   }, [])
 
-  // Carregar dados iniciais
   React.useEffect(() => {
     const loadInitialData = async () => {
       await fetchNotifications()
@@ -126,7 +125,6 @@ export function NewSupervionTable() {
     loadInitialData()
   }, [fetchNotifications, fetchMetrics])
 
-  // Atualizar dados quando as notificações ou métricas mudarem
   React.useEffect(() => {
     if (notifications.length > 0 && metricsData.length > 0) {
       const updatedNotifications = updateNotificationsWithMetrics(notifications, metricsData)
@@ -135,7 +133,6 @@ export function NewSupervionTable() {
       )
       setData(sorted)
     } else if (notifications.length > 0) {
-      // Se temos notificações mas não métricas, ordenar apenas
       const sorted = [...notifications].sort(
         (a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime()
       )
@@ -143,10 +140,8 @@ export function NewSupervionTable() {
     }
   }, [notifications, metricsData, updateNotificationsWithMetrics])
 
-  // Efeito para filtrar os dados por data quando a data for selecionada
   React.useEffect(() => {
     if (!date) {
-      // Se não houver data selecionada, exibir todos os dados ordenados
       if (notifications.length > 0 && metricsData.length > 0) {
         const updatedNotifications = updateNotificationsWithMetrics(notifications, metricsData)
         const sorted = [...updatedNotifications].sort(
@@ -155,9 +150,7 @@ export function NewSupervionTable() {
         setData(sorted)
       }
     } else {
-      // Se houver data selecionada, filtrar os dados por essa data
       const selectedDateStr = format(date, "dd/MM/yyyy")
-      
       if (notifications.length > 0 && metricsData.length > 0) {
         const updatedNotifications = updateNotificationsWithMetrics(notifications, metricsData)
         const filtered = updatedNotifications.filter(
@@ -187,7 +180,6 @@ export function NewSupervionTable() {
         return
       }
       
-      // Armazenar o ID da notificação no localStorage para uso na página de detalhes
       localStorage.setItem("selectedNotificationId", notification._id)
       
       const url = `/dashboard/supervisao/detalhes`
@@ -299,13 +291,8 @@ export function NewSupervionTable() {
   )
 
   return (
-    <div className="container py-10">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm font-semibold text-gray-700">
-          {`Total de supervisões: ${data.length}`}
-        </div>
-      </div>
-      <DataTable
+    <div >
+    <DataTable
         columns={columns}
         data={data}
         loading={isLoading}

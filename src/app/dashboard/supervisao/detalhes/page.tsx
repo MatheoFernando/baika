@@ -62,7 +62,6 @@ export default function OccurrenceDetailsPage() {
       try {
         const response = await instance.get(`/occurren/${params.id}`)
         
-        // Formatar os dados recebidos
         const data = response.data.data
         const formattedNotification = {
           ...data,

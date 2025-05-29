@@ -62,7 +62,6 @@ export function DataTableFilters<TData>({
     addButtonLabel = "Adicionar",
   } = filterOptions;
 
-  // Este efeito aplica o termo de busca à filtragem global da tabela
   useEffect(() => {
     // Aplicar o searchTerm como um filtro global
     if (searchTerm) {
@@ -71,7 +70,7 @@ export function DataTableFilters<TData>({
   }, [table, searchTerm]);
 
   return (
-    <div className="flex  flex-wrap items-center gap-2 ">
+    <div className="flex  items-center gap-2 ">
       {/* Filtro de nome/busca */}
       {enableNameFilter && (
         <div className="relative w-full md:w-64">
@@ -90,12 +89,12 @@ export function DataTableFilters<TData>({
         <Input
           placeholder="Filtrar por site..."
           value={
-            (table.getColumn("siteName")?.getFilterValue() as string) ?? ""
+            (table.getColumn("name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("siteName")?.setFilterValue(event.target.value)
+            table.getColumn("name")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className=""
         />
       )}
 
@@ -112,7 +111,7 @@ export function DataTableFilters<TData>({
               .getColumn("supervisorName")
               ?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className=""
         />
       )}
 

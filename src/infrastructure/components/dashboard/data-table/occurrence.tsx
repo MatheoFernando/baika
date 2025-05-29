@@ -325,10 +325,8 @@ export function OccurrenceTable() {
   )
 
   return (
-    <div className="container py-10">
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-sm font-semibold text-gray-700">{`Total de ocorrências: ${data.length}`}</div>
-      </div>
+    <div>
+      
       <DataTable
         columns={columns}
         data={data}

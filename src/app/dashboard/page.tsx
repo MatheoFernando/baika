@@ -1,4 +1,4 @@
-import AnalyticsView from "@/src/infrastructure/components/dashboard/analy";
+import AnalyticsView from "@/src/infrastructure/components/dashboard/analyticsView";
 import { SectionCards } from "@/src/infrastructure/components/dashboard/cardsHome";
 import { ActivityTable } from "@/src/infrastructure/components/dashboard/data-table/activities";
 import { BreadcrumbRoutas } from "@/src/infrastructure/components/ulils/breadcrumbRoutas";

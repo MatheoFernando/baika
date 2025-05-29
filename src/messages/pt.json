@@ -1,0 +1,60 @@
+{
+  "Sidebar": {
+    "Inicio": "Início",
+    "Supervisores": "Supervisores",
+    "Clientes": "Clientes",
+    "Ocorrencias": "Ocorrências",
+    "Supervisao": "Supervisão",
+    "Maps": "Mapas",
+    "Chat": "Chat",
+    "Analytics": "Análise",
+    "Relatorio": "Relatório da Supervisão",
+    "Menu": "Menu",
+    "Mais": "Mais"
+  },
+   "SectionCards": {
+    "supervisores": "Supervisores",
+    "totalSupervisores": "Total de supervisores",
+    "clientes": "Clientes",
+    "totalClientes": "Total de clientes",
+    "equipamentos": "Equipamentos",
+    "totalEquipamentos": "Total de equipamentos"
+  },
+  "analytics": {
+    "occurrences": {
+      "title": "Ocorrências",
+      "noData": "Nenhuma ocorrência registrada",
+      "noDataPeriod": "neste período",
+      "total": "Total: {count} ocorrências",
+      "distributionHour": "Distribuição por hora no período selecionado",
+      "distributionDay": "Distribuição por dia no mês"
+    },
+    "supervisions": {
+      "title": "Supervisões",
+      "noData": "Nenhuma supervisão registrada",
+      "noDataPeriod": "neste período",
+      "total": "Total: {count} supervisões",
+      "distributionHour": "Distribuição por hora no período selecionado"
+    },
+    "timeFilters": {
+      "today": "Hoje",
+      "yesterday": "Ontem",
+      "week": "Semana",
+      "month": "Mês"
+    },
+    "periods": {
+      "lastDays": "Últimos 7 dias"
+    },
+    "errors": {
+      "loadingOccurrences": "Erro ao carregar ocorrências",
+      "loadingSupervisions": "Erro ao carregar supervisões",
+      "timeoutOccurrences": "Timeout na requisição de ocorrências",
+      "timeoutSupervisions": "Timeout na requisição de supervisões",
+      "invalidResponse": "Formato de resposta inválido",
+      "invalidDate": "Data inválida encontrada",
+      "itemWithoutDate": "Item sem data de criação",
+      "processingError": "Erro ao processar item"
+    }
+  }
+  
+}

@@ -64,11 +64,11 @@ useEffect(() => {
     <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div className="flex gap-2 items-center justify-center  border-l pl-3 ml-3 pr-3 border-gray-300 cursor-pointer">
+          <div className="flex gap-2 items-center justify-center border-l pl-3 ml-3 pr-3 border-gray-300 cursor-pointer">
             <Avatar className="h-8 w-8 rounded-lg">
               <AvatarImage src={user.avatar} alt={user.name} />
               {!user.avatar && user.name ? (
-                <AvatarFallback className="flex items-center justify-center bg-gray-400 text-white rounded-full font-semibold">
+                <AvatarFallback className="flex items-center justify-center bg-gray-700 text-white rounded-full font-semibold">
                   {user.name.split(" ").slice(0, 1).join("")[0]?.toUpperCase()}
                   {user.name.split(" ").length > 1 &&
                     user.name.split(" ").slice(-1).join("")[0]?.toUpperCase()}
@@ -79,7 +79,7 @@ useEffect(() => {
                 </AvatarFallback>
               )}
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="hidden md:grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">{user.name}</span>
             </div>
             <ChevronDown className="ml-auto size-4" />

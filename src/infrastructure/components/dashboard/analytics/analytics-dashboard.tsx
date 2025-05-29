@@ -7,39 +7,32 @@ import {
   Bar,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   ResponsiveContainer,
   XAxis,
   YAxis,
   Tooltip,
+  CartesianGrid,
+  LabelList,
+  Area,
+  AreaChart,
 } from "recharts";
 import {
   Building2,
   MapPin,
   Wrench,
   Users,
-  AlertTriangle,
   UserCheck,
   Activity,
   BarChart3,
-  Download,
   FileText,
   FileSpreadsheet,
+  Search,
+  Filter,
+  TrendingUp,
 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/src/infrastructure/ui/card";
-import { Skeleton } from "@/src/infrastructure/ui/skeleton";
-import { Button } from "@/src/infrastructure/ui/button";
 import instance from "@/src/lib/api";
 import { calculateEfficiency, exportToExcel, exportToPDF } from "./exportUtils";
 
-// Interface para os dados da API
 interface SiteData {
   siteCostcenter: string;
   siteName: string;
@@ -71,33 +64,6 @@ interface MetricsData {
   sites?: SiteData[];
 }
 
-const sitesData = [
-  { month: "Jan", sites: 380 },
-  { month: "Fev", sites: 420 },
-  { month: "Mar", sites: 440 },
-  { month: "Abr", sites: 454 },
-];
-
-const equipmentData = [
-  { day: "Seg", equipments: 4100 },
-  { day: "Ter", equipments: 4150 },
-  { day: "Qua", equipments: 4180 },
-  { day: "Qui", equipments: 4200 },
-  { day: "Sex", equipments: 4206 },
-];
-
-const supervisionData = [
-  { name: "Concluídas", value: 2814, color: "#3b82f6" },
-  { name: "Pendentes", value: 186, color: "#e5e7eb" },
-];
-
-const occurrenceData = [
-  { week: "Sem 1", occurrences: 12 },
-  { week: "Sem 2", occurrences: 8 },
-  { week: "Sem 3", occurrences: 15 },
-  { week: "Sem 4", occurrences: 14 },
-];
-
 interface MetricsCardProps {
   title: string;
   subtitle?: string;
@@ -127,50 +93,52 @@ function MetricsCard({
   }, [delay]);
 
   return (
-    <Card
-      className={`transition-all shadow-sm duration-700 ease-out transform ${
+    <div
+      className={`bg-white rounded-lg shadow-sm border-2 p-4 transition-all duration-700 ease-out transform ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-      } hover:shadow-lg hover:-translate-y-1 border-2 `}
+      } hover:shadow-lg hover:-translate-y-1`}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
+          <h3 className="text-sm font-medium text-gray-600">
             {title}
-          </CardTitle>
+          </h3>
           {subtitle && (
-            <p className="text-xs text-muted-foreground/70">{subtitle}</p>
+            <p className="text-xs text-gray-500">{subtitle}</p>
           )}
         </div>
-        <div className="text-muted-foreground">{icon}</div>
-      </CardHeader>
-      <CardContent>
+        <div className="text-gray-600">{icon}</div>
+      </div>
+      <div>
         <div className="text-2xl font-bold mb-1">
           {typeof value === "number" ? value.toLocaleString("pt-BR") : value}
         </div>
         <div className="flex items-center space-x-2">
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <p className="text-xs text-gray-600">{description}</p>
         </div>
         {children && <div className="mt-4">{children}</div>}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 function LoadingSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 9 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-4 rounded" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-16 mb-2" />
-            <Skeleton className="h-3 w-32" />
-            <Skeleton className="h-20 w-full mt-4" />
-          </CardContent>
-        </Card>
+      {Array.from({ length: 7 }).map((_, i) => (
+        <div key={i} className="bg-white rounded-lg shadow-sm border p-4">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="space-y-1">
+              <div className="h-4 w-20 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div>
+            <div className="h-8 w-12 bg-gray-200 rounded animate-pulse mb-1"></div>
+            <div className="h-3 w-24 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-16 w-full bg-gray-200 rounded animate-pulse mt-4"></div>
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -181,6 +149,8 @@ export default function AnalyticsDashboard() {
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState<"excel" | "pdf" | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBy, setFilterBy] = useState<"equipments" | "supervisions" | "all">("all");
 
   const fetchMetrics = async () => {
     try {
@@ -200,8 +170,50 @@ export default function AnalyticsDashboard() {
     fetchMetrics();
   }, []);
 
+  const getFilteredSites = () => {
+    if (!metrics?.sites) return [];
+    
+    let filtered = metrics.sites;
+    
+    if (searchTerm) {
+      filtered = filtered.filter(site => 
+        site.siteName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        site.supervisor.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (filterBy === "equipments") {
+      filtered = filtered.sort((a, b) => b.totalEquipments - a.totalEquipments);
+    } else if (filterBy === "supervisions") {
+      filtered = filtered.sort((a, b) => b.totalSupervisions - a.totalSupervisions);
+    }
+    
+    return filtered.slice(0, 6);
+  };
+
+  const generateSupervisionChartData = () => {
+    if (!metrics?.sites) return [];
+    
+    return metrics.sites.slice(0, 5).map((site, index) => ({
+      name: site.siteName.split(" ")[0],
+      supervisions: site.totalSupervisions,
+      target: Math.floor(site.totalSupervisions * 1.2), 
+    }));
+  };
+
+  const generateSitesBarChartData = () => {
+    const filteredSites = getFilteredSites();
+    
+    return filteredSites.map((site) => ({
+      name: site.siteName.length > 15 ? site.siteName.substring(0, 15) + "..." : site.siteName,
+      equipments: site.totalEquipments,
+      supervisions: site.totalSupervisions,
+      workers: site.siteNumberOfWorkers,
+    }));
+  };
+
   const generateSitesChartData = () => {
-    if (!metrics?.sites) return sitesData;
+    if (!metrics?.sites) return [];
     return metrics.sites.slice(0, 4).map((site, index) => ({
       month: `Site ${index + 1}`,
       sites: site.totalEquipments,
@@ -209,65 +221,14 @@ export default function AnalyticsDashboard() {
   };
 
   const generateEquipmentChartData = () => {
-    if (!metrics?.sites) return equipmentData;
-    // Pega os primeiros 5 sites para mostrar no gráfico de equipamentos
+    if (!metrics?.sites) return [];
     return metrics.sites.slice(0, 5).map((site, index) => ({
       day: site.siteName.split(" ")[0] || `Site ${index + 1}`,
       equipments: site.totalEquipments,
     }));
   };
 
-  const generateOccurrenceChartData = () => {
-    if (!metrics?.sites) return occurrenceData;
-
-    // Agrupa ocorrências por semana simulada baseada nos sites
-    const sitesWithOccurrences = metrics.sites.filter(
-      (site) => site.totalOccurrences > 0
-    );
-    if (sitesWithOccurrences.length === 0) {
-      return [
-        { week: "Sem 1", occurrences: 0 },
-        { week: "Sem 2", occurrences: 0 },
-        { week: "Sem 3", occurrences: 0 },
-        { week: "Sem 4", occurrences: 0 },
-      ];
-    }
-
-    return sitesWithOccurrences.slice(0, 4).map((site, index) => ({
-      week: `Sem ${index + 1}`,
-      occurrences: site.totalOccurrences,
-    }));
-  };
-
-  // Gerar dados do gráfico de barras para sites
-  const generateSitesBarChartData = () => {
-    if (!metrics?.sites) return [];
-
-    return metrics.sites
-      .sort((a, b) => b.totalEquipments - a.totalEquipments)
-      .slice(0, 6)
-      .map((site) => ({
-        name:
-          site.siteName.length > 12
-            ? site.siteName.substring(0, 12) + "..."
-            : site.siteName,
-        equipments: site.totalEquipments,
-      }));
-  };
-
-  const updateSupervisionData = () => {
-    if (!metrics) return supervisionData;
-
-    const completed = metrics.supervisions || 0;
-    const pending = Math.max(0, Math.floor(completed * 0.1));
-
-    return [
-      { name: "Concluídas", value: completed, color: "#3b82f6" },
-      { name: "Pendentes", value: pending, color: "#e5e7eb" },
-    ];
-  };
-
-  // Funções de exportação
+ 
   const handleExportExcel = async () => {
     if (!metrics) return;
 
@@ -308,8 +269,8 @@ export default function AnalyticsDashboard() {
     return (
       <div className="p-6 space-y-6">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-4 w-64" />
+          <div className="h-8 w-64 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-4 w-96 bg-gray-200 rounded animate-pulse"></div>
         </div>
         <LoadingSkeleton />
       </div>
@@ -344,46 +305,43 @@ export default function AnalyticsDashboard() {
           <h1 className="text-3xl font-bold tracking-tight">
             Dashboard de Analytics
           </h1>
-          <p className="text-muted-foreground">Nenhum dado disponível</p>
+          <p className="text-gray-600">Nenhum dado disponível</p>
         </div>
       </div>
     );
   }
 
   const sitesChartData = generateSitesBarChartData();
+  const supervisionChartData = generateSupervisionChartData();
 
   return (
-    <div className="p-6 space-y-6 animate-in fade-in duration-1000">
+    <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             Dashboard de Analytics
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-gray-600">
             Visão geral das métricas e indicadores principais do sistema
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
+          <button
             onClick={handleExportExcel}
             disabled={exporting === "excel"}
-            variant="outline"
-            size="sm"
-            className="flex items-center cursor-pointer gap-2 hover:bg-blue-600 hover:text-white" 
+            className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50"
           >
             <FileSpreadsheet className="h-4 w-4" />
             {exporting === "excel" ? "Exportando..." : "Excel"}
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleExportPDF}
             disabled={exporting === "pdf"}
-            variant="outline"
-            size="sm"
-            className="flex items-center cursor-pointer gap-2 hover:bg-blue-600 hover:text-white" 
+            className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors disabled:opacity-50"
           >
             <FileText className="h-4 w-4" />
             {exporting === "pdf" ? "Exportando..." : "PDF"}
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -410,6 +368,7 @@ export default function AnalyticsDashboard() {
             ))}
           </div>
         </MetricsCard>
+
         <MetricsCard
           title="Total de Sites"
           value={metrics.totalSites || 0}
@@ -426,7 +385,6 @@ export default function AnalyticsDashboard() {
                 stroke="#10b981"
                 strokeWidth={2}
                 dot={false}
-                className="animate-in slide-in-from-left duration-1000"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -446,7 +404,6 @@ export default function AnalyticsDashboard() {
                 dataKey="equipments"
                 fill="#f97316"
                 radius={[2, 2, 0, 0]}
-                className="animate-in slide-in-from-bottom duration-1000"
               />
             </BarChart>
           </ResponsiveContainer>
@@ -485,43 +442,16 @@ export default function AnalyticsDashboard() {
           color="blue"
         >
           <ResponsiveContainer width="100%" height={64}>
-            <PieChart>
-              <Pie
-                data={updateSupervisionData()}
-                cx="50%"
-                cy="50%"
-                innerRadius={20}
-                outerRadius={30}
-                dataKey="value"
-                className="animate-in spin-in duration-1000"
-              >
-                {updateSupervisionData().map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-        </MetricsCard>
-
-        <MetricsCard
-          title="Total de Ocorrências"
-          value={metrics.occurrences || 0}
-          description="ocorrências registradas"
-          icon={<AlertTriangle className="h-4 w-4" />}
-          delay={600}
-          color="red"
-        >
-          <ResponsiveContainer width="100%" height={64}>
-            <LineChart data={generateOccurrenceChartData()}>
-              <Line
+            <AreaChart data={supervisionChartData}>
+              <Area
                 type="monotone"
-                dataKey="occurrences"
-                stroke="#ef4444"
+                dataKey="supervisions"
+                stroke="#3b82f6"
+                fill="#3b82f6"
+                fillOpacity={0.3}
                 strokeWidth={2}
-                dot={{ fill: "#ef4444", r: 3 }}
-                className="animate-in slide-in-from-right duration-1000"
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </MetricsCard>
 
@@ -530,7 +460,7 @@ export default function AnalyticsDashboard() {
           value={calculateEfficiency(metrics)}
           description="eficiência operacional"
           icon={<Activity className="h-4 w-4" />}
-          delay={700}
+          delay={600}
           color="green"
         >
           <div className="space-y-2">
@@ -552,7 +482,7 @@ export default function AnalyticsDashboard() {
           value="Online"
           description="todos os sistemas operacionais"
           icon={<Activity className="h-4 w-4" />}
-          delay={900}
+          delay={700}
           color="green"
         >
           <div className="flex items-center space-x-2">
@@ -567,34 +497,69 @@ export default function AnalyticsDashboard() {
                 key={i}
                 className="h-1 bg-green-500 rounded animate-pulse"
                 style={{ animationDelay: `${i * 100}ms` }}
-              ></div>
+              />
             ))}
           </div>
         </MetricsCard>
       </div>
 
-      <MetricsCard
-        title="Distribuição por Sites"
-        subtitle={`Top ${sitesChartData.length} sites com mais equipamentos`}
-        value={`${metrics.sites?.length || 0} sites`}
-        description="sites cadastrados"
-        icon={<BarChart3 className="h-5 w-5" />}
-        delay={800}
-        color="blue"
-      >
-        <ResponsiveContainer width="100%" height={280}>
+      {/* Filtros para Sites */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex gap-2 items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Buscar por site ou supervisor..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[250px]"
+            />
+          </div>
+          <div className="relative">
+            <select
+              value={filterBy}
+              onChange={(e) => setFilterBy(e.target.value as "equipments" | "supervisions" | "all")}
+              className="appearance-none bg-white border border-gray-300 rounded-md px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-transparent w-[200px]"
+            >
+              <option value="all">Todos os Sites</option>
+              <option value="equipments">Mais Equipamentos</option>
+              <option value="supervisions">Mais Supervisões</option>
+            </select>
+            <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+      {/* Gráfico de Sites Melhorado */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <BarChart3 className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">Distribuição por Sites</h2>
+          </div>
+          <p className="text-sm text-gray-600">
+            {filterBy === "equipments" && "Sites ordenados por quantidade de equipamentos"}
+            {filterBy === "supervisions" && "Sites ordenados por quantidade de supervisões"}
+            {filterBy === "all" && `${sitesChartData.length} sites encontrados`}
+            {searchTerm && ` - Filtrado por: "${searchTerm}"`}
+          </p>
+        </div>
+        
+        <ResponsiveContainer width="100%" height={350}>
           <BarChart
             data={sitesChartData}
-            margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
+            layout="horizontal"
+            margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
           >
-            <XAxis
-              dataKey="name"
-              tick={{ fontSize: 13, fontWeight: "bold" }}
-              angle={-45}
-              textAnchor="end"
-              height={120}
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+            <XAxis type="number" />
+            <YAxis 
+              dataKey="name" 
+              type="category" 
+              width={120}
+              tick={{ fontSize: 12 }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#f8fafc",
@@ -602,10 +567,33 @@ export default function AnalyticsDashboard() {
                 borderRadius: "8px",
               }}
             />
-            <Bar dataKey="equipments" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+            <Bar 
+              dataKey="equipments" 
+              fill="#3b82f6" 
+              radius={[0, 4, 4, 0]}
+              name="Equipamentos"
+            >
+              <LabelList
+                dataKey="equipments"
+                position="right"
+                offset={8}
+                className="fill-gray-700"
+                fontSize={12}
+              />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </MetricsCard>
+        
+        <div className="mt-4 flex flex-col gap-2 text-sm">
+          <div className="flex gap-2 font-medium items-center">
+            Total de {sitesChartData.reduce((sum, site) => sum + site.equipments, 0)} equipamentos
+            <TrendingUp className="h-4 w-4" />
+          </div>
+          <div className="text-gray-600">
+            Distribuição de equipamentos por site monitorado
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

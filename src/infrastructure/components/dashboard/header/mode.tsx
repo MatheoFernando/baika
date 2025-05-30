@@ -37,11 +37,11 @@ export function Mode() {
         </div>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-40 rounded-lg shadow-xl" align="end" sideOffset={4}>
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+      <DropdownMenuContent className="min-w-30 rounded-lg shadow-xl" align="center" sideOffset={4}>
+        <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
           <Sun className="mr-2 h-5 w-5" /> Claro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
           <Moon className="mr-2 h-5 w-5" /> Escuro
         </DropdownMenuItem>
       </DropdownMenuContent>

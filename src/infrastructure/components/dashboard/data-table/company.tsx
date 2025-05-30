@@ -193,7 +193,6 @@ export default function CompanyTable() {
             { key: "occurrences", label: "Ocorrências"} as { key: keyof Company; label: string; onClick?: (company: Company) => void },
           ],
           onCardClick: (company) => {
-            // Navegar para sites quando clicar no card
             const params = new URLSearchParams({
               clientCode: company.clientCode,
               companyName: company.name

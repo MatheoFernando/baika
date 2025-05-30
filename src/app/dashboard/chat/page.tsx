@@ -45,7 +45,7 @@ export default function Chat() {
   }
 
   return (
-    <Card className="bg-white h-screen">
+    <Card className="bg-white dark:bg-gray-800 h-screen">
       <ChatInterface
         currentUser={{
           id: user.id,

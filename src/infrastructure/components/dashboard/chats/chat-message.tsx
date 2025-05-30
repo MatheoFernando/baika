@@ -20,7 +20,6 @@ export default function ChatMessage({ message, onDelete, onEdit }: ChatMessagePr
   const [editContent, setEditContent] = useState(message.content)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
-  // Se a mensagem estiver vazia, mostrar aviso
   if (message.isEmpty || !message.content.trim()) {
     return (
       <div className="flex justify-center my-4">
@@ -106,7 +105,7 @@ export default function ChatMessage({ message, onDelete, onEdit }: ChatMessagePr
     }
 
     return (
-      <div className="mt-2 p-3 bg-gray-50 rounded-lg border">
+      <div className="mt-2 p-3 bg-gray-50 rounded-lg border dark:bg-gray-800">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-blue-100 rounded flex items-center justify-center">
             <Download className="h-4 w-4 text-blue-600" />

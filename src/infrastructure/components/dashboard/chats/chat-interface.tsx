@@ -49,7 +49,6 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Media queries
   const [isDesktop, setIsDesktop] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
 
@@ -80,7 +79,6 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
     setMessages,
   } = useChat({ currentUser })
 
-  // Filter contacts based on search
   const filteredContacts = React.useMemo(
     () =>
       contacts.filter(
@@ -91,10 +89,8 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
     [contacts, searchQuery],
   )
 
-  // Check if send button should be enabled
   const canSendMessage = newMessage.trim().length > 0 && isConnected && activeChat
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -135,14 +131,9 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   const handleSetActiveChat = useCallback(
     (employeeId: string, supervisor: Supervisor) => {
       console.log("Switching to chat:", { employeeId, supervisor: supervisor.name })
-
-      // Clear current messages immediately for better UX
       setMessages([])
-
       setActiveChat(employeeId)
       setActiveSupervisor(supervisor)
-
-      // Fetch messages for the new chat
       fetchMessages(employeeId)
 
       socketManager.joinChatRoom(`${currentUser.employeeId}-${employeeId}`)
@@ -170,7 +161,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
       }
 
       const messageContent = newMessage
-      setNewMessage("") // Clear input immediately for better UX
+      setNewMessage("") 
 
       await sendMessage(messageContent, activeChat, file)
 
@@ -207,8 +198,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   }, [activeChat, clearMessages])
 
   const renderSidebar = () => (
-    <div className="w-full h-full flex flex-col bg-white">
-      {/* User Header */}
+    <div className="w-full h-full flex flex-col bg-white dark:bg-gray-900">
       <div className="p-4 flex items-center justify-between border-b shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="h-10 w-10 shrink-0">
@@ -235,7 +225,6 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
         </Button>
       </div>
 
-      {/* Search */}
       <div className="p-4 shrink-0">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -248,7 +237,6 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Tabs */}
       <Tabs defaultValue="contacts" className="flex flex-col min-h-0 px-4">
         <TabsList className="grid grid-cols-2 w-full">
           <TabsTrigger value="contacts" className="text-sm">
@@ -289,24 +277,21 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
   )
 
   return (
-    <div className="flex bg-background overflow-hidden h-full">
-      {/* Desktop Sidebar */}
+    <div className="flex bg-background dark:bg-gray-800 overflow-hidden h-full ">
       {isDesktop ? (
-        <div className="w-80 border-r h-full shrink-0">{renderSidebar()}</div>
+        <div className="w-80 border-r h-full shrink-0 dark:bg-gray-900">{renderSidebar()}</div>
       ) : (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="p-0 w-[400px] max-w-[90vw]">
+          <SheetContent side="left" className="p-0 w-[400px] max-w-[90vw] dark:bg-gray-900">
             {renderSidebar()}
           </SheetContent>
         </Sheet>
       )}
 
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full min-w-0">
+      <div className="flex-1 flex flex-col h-full min-w-0 dark:bg-gray-800">
         {activeSupervisor ? (
           <>
-            {/* Chat Header */}
-            <div className="border-b p-4 flex items-center justify-between shrink-0 bg-white">
+            <div className="border-b p-4 flex items-center justify-between shrink-0 bg-white dark:bg-gray-900">
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 {!isDesktop && (
                   <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="shrink-0 h-8 w-8">
@@ -359,10 +344,9 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
               </div>
             </div>
 
-            {/* Messages Area */}
-            <div className="flex-1 min-h-0 relative bg-gray-50">
-              <ScrollArea className="h-full">
-                <div className="p-4 space-y-4">
+            <div className="flex-1 min-h-0 relative bg-gray-50 dark:bg-gray-800">
+              <ScrollArea className="h-full dark:bg-gray-800">
+                <div className="p-4 space-y-4 ">
                   {messages.map((message) => (
                     <ChatMessage
                       key={message.id}
@@ -427,7 +411,7 @@ export default function ChatInterface({ currentUser }: ChatInterfaceProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center bg-gray-50">
+          <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
             <div className="text-center max-w-md mx-auto p-6">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Menu className="h-8 w-8 text-blue-600" />

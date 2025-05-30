@@ -55,6 +55,131 @@
       "itemWithoutDate": "Item sem data de criação",
       "processingError": "Erro ao processar item"
     }
+  },
+  "DataTable": {
+      "subtitle": "Gerencie e visualize seus dados de forma eficiente",
+      "showing": "Mostrando {start} a {end} de {total} registros",
+      "noDataFound": "Nenhum dado encontrado",
+      "defaultEmptyMessage": "Nenhum registro encontrado para exibir"
+    },
+     "login": {
+    "leftPanel": {
+      "description": "Com o poder do Falcon, você pode focar apenas nas funcionalidades dos seus produtos digitais, deixando o design com a gente!",
+      "readOur": "Leia nossos",
+      "terms": "termos",
+      "and": "e",
+      "conditions": "condições"
+    },
+    "form": {
+      "title": "Entrar na conta",
+      "phoneNumber": "Número de telefone",
+      "phoneNumberPlaceholder": "Digite seu número de telefone",
+      "password": "Senha", 
+      "passwordPlaceholder": "Digite sua senha",
+      "forgotPassword": "Esqueceu a senha?",
+      "loginButton": "Entrar",
+      "loggingIn": "Entrando"
+    },
+    "validation": {
+      "numberLength": "O número deve ter exatamente 9 dígitos",
+      "numberDigits": "O número deve conter apenas dígitos",
+      "passwordMin": "A senha deve ter no mínimo 6 caracteres"
+    },
+    "messages": {
+      "loginSuccess": "Login realizado com sucesso!",
+      "userNotFound": "Usuário não encontrado",
+      "invalidCredentials": "Credenciais inválidas",
+      "loginError": "Erro ao fazer login. Tente novamente.",
+      "serverConnectionError": "Erro ao conectar com o servidor."
+    }
+  },
+  "map": {
+    "online": "Online",
+    "offline": "Offline",
+    "filtersAndOptions": "Filtros e Opções",
+    "selectSupervisorsAndRoutes": "Selecione supervisores e visualize suas rotas",
+    "supervisorRoutes": "Rotas dos Supervisores",
+    "locationHistory": "Histórico de Localização",
+    "refresh": "Atualizar",
+    "routes": "Rotas",
+    "history": "Histórico",
+    "searchSupervisor": "Buscar supervisor",
+    "searchPlaceholder": "Digite o nome do supervisor...",
+    "selectDate": "Selecionar data",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "supervisors": "Supervisores",
+    "noSupervisorsFound": "Nenhum supervisor encontrado",
+    "filters": "Filtros",
+    "all": "Todos",
+    "filterByDate": "Filtrar por data",
+    "statistics": "Estatísticas",
+    "total": "Total",
+    "historyPoints": "Pontos do histórico",
+    "selectedDate": "Data selecionada",
+    "errors": {
+      "loadSupervisors": "Erro ao carregar supervisores",
+      "loadHistory": "Erro ao carregar histórico",
+      "loadPositions": "Não foi possível carregar as posições dos supervisores"
+    },
+    "success": {
+      "historyLoaded": "Histórico carregado com sucesso"
+    }
+  },
+  "settings": {
+    "title": "Definição ",
+    "viewProfile": "Ver perfil",
+    "success": "Sucesso",
+    "error": "Erro",
+    "cancel": "Cancelar",
+    "userNotAuthenticated": "Usuário não autenticado",
+    "userNotFound": "Usuário não encontrado",
+    "profileUpdated": "Perfil atualizado com sucesso",
+    "updateProfileError": "Falha ao atualizar perfil",
+    "passwordUpdated": "Senha atualizada com sucesso",
+    "updatePasswordError": "Falha ao atualizar senha",
+    "passwordMismatch": "As senhas não coincidem",
+    "passwordTooShort": "A senha deve ter pelo menos 8 caracteres",
+    "accountDeleted": "Conta deletada com sucesso",
+    "deleteAccountError": "Falha ao deletar conta",
+    "tabs": {
+      "profile": "Perfil",
+      "password": "Senha",
+      "danger": "Zona de Perigo"
+    },
+    "profile": {
+      "title": "Informações do Perfil",
+      "description": "Atualize as informações do seu perfil e endereço de email.",
+      "name": "Nome",
+      "namePlaceholder": "Digite seu nome",
+      "email": "Email",
+      "emailPlaceholder": "Digite seu email",
+      "number": "Número de Telefone",
+      "phoneNumber": "Digite seu número de telefone",
+      "update": "Atualizar Perfil",
+      "phoneNumberRequired": "O número de telefone é obrigatório.",
+      "phoneNumberInvalid": "O número de telefone deve conter apenas dígitos.",
+      "phoneNumberLength": "O número de telefone deve ter exatamente 9 dígitos."
+    },
+    "password": {
+      "title": "Atualizar Senha",
+      "description": "Certifique-se de que sua conta está usando uma senha longa e aleatória para manter-se seguro.",
+      "current": "Senha Atual",
+      "new": "Nova Senha",
+      "confirm": "Confirmar Nova Senha",
+      "requirements": "Sua nova senha deve ter mais de 8 caracteres.",
+      "update": "Atualizar Senha"
+    },
+    "danger": {
+      "title": "Zona de Perigo",
+      "description": "Deletar permanentemente sua conta e todos os dados associados.",
+      "deleteAccount": "Deletar Conta",
+      "deleteWarning": "Uma vez que sua conta for deletada, todos os seus recursos e dados serão permanentemente deletados. Antes de deletar sua conta, por favor baixe qualquer dado ou informação que deseje manter.",
+      "deleteButton": "Deletar Conta",
+      "confirmTitle": "Você tem certeza absoluta?",
+      "confirmDescription": "Esta ação não pode ser desfeita. Isso irá deletar permanentemente sua conta e remover seus dados dos nossos servidores.",
+      "confirmDelete": "Sim, deletar conta"
+    }
   }
   
 }

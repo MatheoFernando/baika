@@ -55,5 +55,130 @@
       "itemWithoutDate": "Élément sans date de création",
       "processingError": "Erreur lors du traitement de l'élément"
     }
+  },
+  "DataTable": {
+      "subtitle": "Gérez et visualisez vos données efficacement",
+      "showing": "Affichage de {start} à {end} sur {total} enregistrements",
+      "noDataFound": "Aucune donnée trouvée",
+      "defaultEmptyMessage": "Aucun enregistrement trouvé à afficher"
+    },
+     "login": {
+    "leftPanel": {
+      "description": "Avec la puissance de Falcon, vous pouvez vous concentrer uniquement sur les fonctionnalités de vos produits numériques, en nous laissant le design !",
+      "readOur": "Lisez nos",
+      "terms": "conditions",
+      "and": "et",
+      "conditions": "termes"
+    },
+    "form": {
+      "title": "Se connecter au compte",
+      "phoneNumber": "Numéro de téléphone",
+      "phoneNumberPlaceholder": "Entrez votre numéro de téléphone",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "loginButton": "Se connecter", 
+      "loggingIn": "Connexion en cours"
+    },
+    "validation": {
+      "numberLength": "Le numéro doit avoir exactement 9 chiffres",
+      "numberDigits": "Le numéro ne doit contenir que des chiffres",
+      "passwordMin": "Le mot de passe doit avoir au moins 6 caractères"
+    },
+    "messages": {
+      "loginSuccess": "Connexion réussie !",
+      "userNotFound": "Utilisateur non trouvé",
+      "invalidCredentials": "Identifiants invalides",
+      "loginError": "Erreur de connexion. Veuillez réessayer.",
+      "serverConnectionError": "Erreur de connexion au serveur."
+    }
+  },
+  "map": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "filtersAndOptions": "Filtres et Options",
+    "selectSupervisorsAndRoutes": "Sélectionnez les superviseurs et visualisez leurs itinéraires",
+    "supervisorRoutes": "Itinéraires des Superviseurs",
+    "locationHistory": "Historique de Localisation",
+    "refresh": "Actualiser",
+    "routes": "Itinéraires",
+    "history": "Historique",
+    "searchSupervisor": "Rechercher superviseur",
+    "searchPlaceholder": "Entrez le nom du superviseur...",
+    "selectDate": "Sélectionner la date",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "supervisors": "Superviseurs",
+    "noSupervisorsFound": "Aucun superviseur trouvé",
+    "filters": "Filtres",
+    "all": "Tous",
+    "filterByDate": "Filtrer par date",
+    "statistics": "Statistiques",
+    "total": "Total",
+    "historyPoints": "Points d'historique",
+    "selectedDate": "Date sélectionnée",
+    "errors": {
+      "loadSupervisors": "Erreur lors du chargement des superviseurs",
+      "loadHistory": "Erreur lors du chargement de l'historique",
+      "loadPositions": "Impossible de charger les positions des superviseurs"
+    },
+    "success": {
+      "historyLoaded": "Historique chargé avec succès"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "viewProfile": "Voir le profil",
+    "success": "Succès",
+    "error": "Erreur",
+    "cancel": "Annuler",
+    "userNotAuthenticated": "Utilisateur non authentifié",
+    "userNotFound": "Utilisateur non trouvé",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "updateProfileError": "Échec de la mise à jour du profil",
+    "passwordUpdated": "Mot de passe mis à jour avec succès",
+    "updatePasswordError": "Échec de la mise à jour du mot de passe",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+    "accountDeleted": "Compte supprimé avec succès",
+    "deleteAccountError": "Échec de la suppression du compte",
+    "tabs": {
+      "profile": "Profil",
+      "password": "Mot de passe",
+      "danger": "Zone de danger"
+    },
+    "profile": {
+      "title": "Informations du profil",
+      "description": "Mettez à jour les informations de votre profil et votre adresse email.",
+      "name": "Nom",
+      "namePlaceholder": "Entrez votre nom",
+      "email": "Email",
+      "emailPlaceholder": "Entrez votre email",
+      "number": "Numéro de téléphone",
+      "phoneNumber": "Entrez votre numéro de téléphone",
+      "update": "Mettre à jour le profil",
+      "phoneNumberRequired": "Le numéro de téléphone est requis.",
+      "phoneNumberInvalid": "Le numéro de téléphone ne doit contenir que des chiffres.",
+      "phoneNumberLength": "Le numéro de téléphone doit comporter exactement 9 chiffres."
+    },
+    "password": {
+      "title": "Mettre à jour le mot de passe",
+      "description": "Assurez-vous que votre compte utilise un mot de passe long et aléatoire pour rester sécurisé.",
+      "current": "Mot de passe actuel",
+      "new": "Nouveau mot de passe",
+      "confirm": "Confirmer le nouveau mot de passe",
+      "requirements": "Votre nouveau mot de passe doit contenir plus de 8 caractères.",
+      "update": "Mettre à jour le mot de passe"
+    },
+    "danger": {
+      "title": "Zone de danger",
+      "description": "Supprimer définitivement votre compte et toutes les données associées.",
+      "deleteAccount": "Supprimer le compte",
+      "deleteWarning": "Une fois votre compte supprimé, toutes ses ressources et données seront définitivement supprimées. Avant de supprimer votre compte, veuillez télécharger toutes les données ou informations que vous souhaitez conserver.",
+      "deleteButton": "Supprimer le compte",
+      "confirmTitle": "Êtes-vous absolument sûr ?",
+      "confirmDescription": "Cette action ne peut pas être annulée. Cela supprimera définitivement votre compte et supprimera vos données de nos serveurs.",
+      "confirmDelete": "Oui, supprimer le compte"
+    }
   }
 }

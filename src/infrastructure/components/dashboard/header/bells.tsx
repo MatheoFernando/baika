@@ -59,8 +59,8 @@ export function Bells() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="min-w-80 max-h-96 overflow-auto rounded-xl shadow-xl"
-        align="end"
+        className="min-w-60 max-h-96 overflow-auto rounded-xl shadow-xl"
+        align="center"
         sideOffset={8}
       >
         <DropdownMenuLabel className="text-sm font-medium text-muted-foreground">

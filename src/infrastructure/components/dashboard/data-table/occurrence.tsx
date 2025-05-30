@@ -11,6 +11,7 @@ import { PDFDownloadLink } from "@react-pdf/renderer"
 import { toast } from "sonner"
 import instance from "@/src/lib/api"
 import { OccurrencePDF } from "../pdf/occurrence-pdf"
+import type { Column, Row } from "@tanstack/react-table"
 
 export type Notification = {
   _id: string

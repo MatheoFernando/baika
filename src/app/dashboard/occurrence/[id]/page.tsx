@@ -16,7 +16,6 @@ import instance from "@/src/lib/api"
 import { BreadcrumbRoutas } from "@/src/infrastructure/components/ulils/breadcrumbRoutas"
 import toast from "react-hot-toast"
 
-// Tipos
 type Notification = {
   _id: string
   idNotification?: string
@@ -55,15 +54,11 @@ export default function OccurrenceDetailsPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Buscar os dados da ocorrência específica
     const fetchOccurrenceDetails = async () => {
       if (!params.id) return
-
       setLoading(true)
       try {
         const response = await instance.get(`/occurrence/${params.id}`)
-        
-        // Formatar os dados recebidos
         const data = response.data.data
         const formattedNotification = {
           ...data,
@@ -88,9 +83,7 @@ export default function OccurrenceDetailsPage() {
     return (
       <div className="container mx-auto py-10 px-4">
         <div className="flex items-center gap-2 mb-6">
-
           <BreadcrumbRoutas title="Detalhes da Ocorrência" productName="Ocorrências" showBackButton />
-    
         </div>
         <Card>
           <CardHeader>
@@ -140,7 +133,6 @@ export default function OccurrenceDetailsPage() {
   }
 
   const priorityColor = priorityColors[notification.priority] || "bg-gray-100 text-gray-800 border-gray-200"
-
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -163,7 +155,6 @@ export default function OccurrenceDetailsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Coluna da esquerda - Informações gerais */}
         <Card className="lg:col-span-1">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
@@ -210,8 +201,6 @@ export default function OccurrenceDetailsPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Coluna da direita - Detalhes, Trabalhadores e Equipamentos */}
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">

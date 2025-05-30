@@ -49,7 +49,6 @@ class SocketManager {
     return this.socket
   }
 
-  // ✅ Chat event listeners
   onMessageReceived(callback: (message: any) => void) {
     this.socket?.on("message_received", callback)
   }
@@ -82,7 +81,6 @@ class SocketManager {
     this.socket?.off("user_stopped_typing", callback)
   }
 
-  // ✅ Chat event emitters
   sendMessage(data: any) {
     this.socket?.emit("send_message", data)
   }

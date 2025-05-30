@@ -30,8 +30,10 @@ import {
 } from "@/src/infrastructure/ui/alert-dialog";
 import { getUser, logout } from "@/src/core/auth/authApi";
 import LoadingScreen from "@/src/infrastructure/ui/loadingScreen";
+import { useRouter } from "next/navigation";
 
 export function NavUser() {
+  const router = useRouter();
   const [user, setUser] = useState<{
     name: string;
     email: string;
@@ -117,14 +119,14 @@ useEffect(() => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/dashboard/settings")}>
               <Settings className="mr-2 h-4 w-4" />
               Definições
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <AlertDialogTrigger asChild>
-            <DropdownMenuItem className="text-red-500 focus:text-red-600">
+            <DropdownMenuItem className="text-red-500 focus:text-red-600 cursor-pointer">
               <LogOut className="mr-2 h-4 w-4" />
               Sair
             </DropdownMenuItem>
@@ -142,7 +144,7 @@ useEffect(() => {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
             onClick={logout}
           >
             Sair
